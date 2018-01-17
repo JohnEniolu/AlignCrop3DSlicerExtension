@@ -1,4 +1,5 @@
 import os
+import inspect
 import unittest
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
@@ -31,14 +32,12 @@ class AlignCrop3DSlicerModule(ScriptedLoadableModule):
 #
 # AlignCrop3DSlicerModuleWidget
 #
-
 class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
     """Uses ScriptedLoadableModuleWidget base class, available at:
     https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py"""
 
     def setup(self):
         ScriptedLoadableModuleWidget.setup(self)
-
         # Instantiate and connect widgets ...
 
         #
@@ -54,18 +53,34 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         #
         # Atlas Template selector
         #
-        self.templateSelector = slicer.qMRMLNodeComboBox()
-        self.templateSelector.nodeTypes = ["vtkMRMLScalarVolumeNode"]
-        self.templateSelector.selectNodeUponCreation = True
-        self.templateSelector.addEnabled = False
-        self.templateSelector.removeEnabled = False
-        self.templateSelector.noneEnabled = False
-        self.templateSelector.showHidden = False
-        self.templateSelector.showChildNodeTypes = False
-        self.templateSelector.setMRMLScene( slicer.mrmlScene )
-        self.templateSelector.setToolTip( "Pick the template to register input volume to" )
-        parametersFormLayoutAlign.addRow("Atlas Template: ", self.templateSelector)
+        self.templateAtlasSelector = slicer.qMRMLNodeComboBox()
+        self.templateAtlasSelector.nodeTypes = ["vtkMRMLScalarVolumeNode"]
+        self.templateAtlasSelector.selectNodeUponCreation = True
+        self.templateAtlasSelector.addEnabled = False
+        self.templateAtlasSelector.removeEnabled = False
+        self.templateAtlasSelector.noneEnabled = True
+        self.templateAtlasSelector.showHidden = False
+        self.templateAtlasSelector.showChildNodeTypes = False
+        self.templateAtlasSelector.setMRMLScene( slicer.mrmlScene )
+        self.templateAtlasSelector.setToolTip( "Pick the template image to register input volume to" )
+        #
+        #Atlas Fiducial template selector
+        #
+        self.templateFidSelector = slicer.qMRMLNodeComboBox()
+        self.templateFidSelector.nodeTypes = ["vtkMRMLMarkupsFiducialNode"]
+        self.templateFidSelector.selectNodeUponCreation = True
+        self.templateFidSelector.addEnabled = False
+        self.templateFidSelector.removeEnabled = False
+        self.templateFidSelector.noneEnabled = True
+        self.templateFidSelector.showHidden = False
+        self.templateFidSelector.showChildNodeTypes = False
+        self.templateFidSelector.setMRMLScene( slicer.mrmlScene )
+        self.templateFidSelector.setToolTip( "Pick template fiducials to register input volume fiducials to" )
 
+        templateLayout = qt.QHBoxLayout()
+        templateLayout.addWidget(self.templateAtlasSelector)
+        templateLayout.addWidget(self.templateFidSelector)
+        parametersFormLayoutAlign.addRow("Atlas Template & Fiducials: ", templateLayout)
         #
         # input volume selector
         #
@@ -74,7 +89,7 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.inputSelector.selectNodeUponCreation = True
         self.inputSelector.addEnabled = False
         self.inputSelector.removeEnabled = False
-        self.inputSelector.noneEnabled = False
+        self.inputSelector.noneEnabled = True
         self.inputSelector.showHidden = False
         self.inputSelector.showChildNodeTypes = False
         self.inputSelector.setMRMLScene( slicer.mrmlScene )
@@ -84,28 +99,49 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         #
         # Fiduical placement buttons
         #
-        self.button1		 	= qt.QPushButton('Fiduical 1')
-        self.button1.toolTip 	= "Place first fiduical"
-        self.button1.enabled	= False
+        self.OWButton		 	= qt.QPushButton('Oval Window')
+        self.OWButton.toolTip 	= "Place oval window fiducial"
+        self.OWButton.enabled	= False
 
-        self.button2			=qt.QPushButton('Fiduical 2')
-        self.button2.toolTip 	= "Place second fiduical"
-        self.button2.enabled	= False
+        self.RWButton			= qt.QPushButton('Round Window')
+        self.RWButton.toolTip 	= "Place round window fiducial"
+        self.RWButton.enabled	= False
 
-        self.button3		 	= qt.QPushButton('Fiducial 3')
-        self.button3.toolTip 	= "Place third fiduical"
-        self.button3.enabled	= False
+        self.SFButton		 	= qt.QPushButton('Stylomastoid Formamen')
+        self.SFButton.toolTip 	= "Place stylomastoid foramen fiducial"
+        self.SFButton.enabled	= False
 
-        self.button4			= qt.QPushButton('Fiduical 4')
-        self.button4.toolTip 	= "Place fourth fiduical"
-        self.button4.enabled	= False
+        self.AEButton			= qt.QPushButton('Arcuate Eminence')
+        self.AEButton.toolTip 	= "Place arcuate eminence fiducial"
+        self.AEButton.enabled	= False
 
-        fiduicalPlacement = qt.QHBoxLayout()
-        fiduicalPlacement.addWidget(self.button1)
-        fiduicalPlacement.addWidget(self.button2)
-        fiduicalPlacement.addWidget(self.button3)
-        fiduicalPlacement.addWidget(self.button4)
-        parametersFormLayoutAlign.addRow("Fiduical Placement: ", fiduicalPlacement)
+        self.PSCButton			= qt.QPushButton('Posterior SC')
+        self.PSCButton.toolTip 	= "Place posterior semicircular canal fiduical"
+        self.PSCButton.enabled	= False
+
+        self.GGButton		 	= qt.QPushButton('Geniculate Ganglion')
+        self.GGButton.toolTip 	= "Place geniculate ganglion fiduical"
+        self.GGButton.enabled	= False
+
+        self.PAButton		 	= qt.QPushButton('Porus Acousticus')
+        self.PAButton.toolTip 	= "Place porus acousticus fiducial"
+        self.PAButton.enabled	= False
+
+        fiduicalPlacement1 = qt.QHBoxLayout()
+        fiduicalPlacement1.addWidget(self.OWButton)
+        fiduicalPlacement1.addWidget(self.RWButton)
+        parametersFormLayoutAlign.addRow("Fiduical Placement: ", fiduicalPlacement1)
+
+        fiduicalPlacement2 = qt.QHBoxLayout()
+        fiduicalPlacement2.addWidget(self.SFButton)
+        fiduicalPlacement2.addWidget(self.AEButton)
+        parametersFormLayoutAlign.addRow("Fiduical Placement: ", fiduicalPlacement2)
+
+        fiduicalPlacement3 = qt.QHBoxLayout()
+        fiduicalPlacement3.addWidget(self.PSCButton)
+        fiduicalPlacement3.addWidget(self.GGButton)
+        fiduicalPlacement3.addWidget(self.PAButton)
+        parametersFormLayoutAlign.addRow("Fiduical Placement: ", fiduicalPlacement3)
 
         #
         # Align Button
@@ -161,27 +197,29 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         #
         # Align Volume connections
         #
-        self.templateSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
-        self.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
-        self.button1.connect('clicked(bool)', self.onButton1)
-        self.button2.connect('clicked(bool)', self.onButton2)
-        self.button3.connect('clicked(bool)', self.onButton3)
-        self.button4.connect('clicked(bool)', self.onButton4)
+        self.templateAtlasSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlign)
+        self.templateFidSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlign)
+        self.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlign)
+        self.OWButton.connect('clicked(bool)', self.onOWButton)
+        self.RWButton.connect('clicked(bool)', self.onRWButton)
+        self.SFButton.connect('clicked(bool)', self.onSFButton)
+        self.AEButton.connect('clicked(bool)', self.onAEButton)
+        self.PSCButton.connect('clicked(bool)', self.onPSCButton)
+        self.GGButton.connect('clicked(bool)', self.onGGButton)
+        self.PAButton.connect('clicked(bool)', self.onPAButton)
         self.alignButton.connect('clicked(bool)', self.onAlignButton)
-        self.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect2)
+        self.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectCrop)
         self.defineCropButton.connect('clicked(bool)', self.onDefineCropButton)
         self.cropButton.connect('clicked(bool)', self.onCropButton)
-
 
         # Add vertical spacer
         self.layout.addStretch(1)
 
-        # Refresh Apply button state
-        self.onSelect()
+        # Refresh select buttons' state
+        self.onSelectAlign()
+        self.onSelectCrop()
 
-        self.onSelect2()
-
-    def onButton1(self):
+    def onOWButton(self):
         #Setup Fiduical placement
         self.movingFiducialNode = slicer.vtkMRMLMarkupsFiducialNode()
         slicer.mrmlScene.AddNode(self.movingFiducialNode)
@@ -190,45 +228,85 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.fiducialWidget.buttonsVisible = False
         self.fiducialWidget.placeButton().show()
         self.fiducialWidget.setMRMLScene(slicer.mrmlScene)
-        self.fiducialWidget.setCurrentNode(self.templateSelector.currentNode())
+        self.fiducialWidget.setCurrentNode(self.movingFiducialNode)
         self.fiducialWidget.placeMultipleMarkups = slicer.qSlicerMarkupsPlaceWidget.ForcePlaceSingleMarkup
 
         #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Place corresponding fiducial 1:\n\n" +
+        slicer.util.infoDisplay("Oval Window:\n\n" +
+                                "Place fiducial on the centre of the oval window.\n\n" +
                                 "Press okay when ready to begin" )
 
         #Enable fiducial placement
         self.fiducialWidget.setPlaceModeEnabled(True)
 
-        self.button1.enabled = False
-        self.button2.enabled = True
+        self.OWButton.enabled = False
+        self.RWButton.enabled = True
 
-    def onButton2(self):
+    def onRWButton(self):
         #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Place corresponding fiducial 2:\n\n" +
-                                    "Press okay when ready to begin" )
+        slicer.util.infoDisplay("Round Window:\n\n" +
+                                "Place fiduical on the centre of the round window.\n\n" +
+                                "Press okay when ready" )
 
         #Enable fiducial placement
         self.fiducialWidget.setPlaceModeEnabled(True)
 
-        self.button2.enabled = False
-        self.button3.enabled = True
+        self.RWButton.enabled = False
+        self.SFButton.enabled = True
 
-    def onButton3(self):
+    def onSFButton(self):
         #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Place corresponding fiducial 3:\n\n" +
-                                    "Press okay when ready to begin" )
+        slicer.util.infoDisplay("Stylomastoid Foramen:\n\n" +
+                                "place fiducial at the point it becomes the canal.\n\n" +
+                                "Press okay when ready" )
 
         #Enable fiducial placement
         self.fiducialWidget.setPlaceModeEnabled(True)
 
-        self.button3.enabled = False
-        self.button4.enabled = True
+        self.SFButton.enabled = False
+        self.AEButton.enabled = True
 
-    def onButton4(self):
+    def onAEButton(self):
         #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Place corresponding fiducial 4:\n\n" +
-                                    "Press okay when ready to begin" )
+        slicer.util.infoDisplay("Arcuate Eminence:\n\n" +
+                                "Place fiducial on the centre of the top of the superior semicircular canal.\n\n" +
+                                "Press okay when ready" )
+
+        #Enable fiducial placement
+        self.fiducialWidget.setPlaceModeEnabled(True)
+
+        self.AEButton.enabled = False
+        self.PSCButton.enabled = True
+
+    def onPSCButton(self):
+        #Delay to ensure Widget Appears & provide user with info
+        slicer.util.infoDisplay("Posterior Semicircular Canal:\n\n" +
+                                "Place fiduical on the mid point of the posterior semicircular canal.\n\n"
+                                "Press okay when ready" )
+
+        #Enable fiducial placement
+        self.fiducialWidget.setPlaceModeEnabled(True)
+
+        self.PSCButton.enabled = False
+        self.GGButton.enabled = True
+
+    def onGGButton(self):
+        #Delay to ensure Widget Appears & provide user with info
+        slicer.util.infoDisplay("Geniculate Ganglion:\n\n" +
+                                "Place fiduical on the geniculate ganglion.\n\n" +
+                                "Press okay when ready to begin" )
+
+        #Enable fiducial placement
+        self.fiducialWidget.setPlaceModeEnabled(True)
+
+        self.GGButton.enabled = False
+        self.PAButton.enabled = True
+
+    def onPAButton(self):
+        #Delay to ensure Widget Appears & provide user with info
+        slicer.util.infoDisplay("Porus Acousticus:\n\n" +
+                                "Place fiducial on the centre of the porus acousticus.\n\n" +
+                                "Press okay when ready to begin" )
 
         #Enable fiducial placement
         self.fiducialWidget.setPlaceModeEnabled(True)
@@ -240,17 +318,22 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.button4.enabled = False
         #TODO - logic for aligning images based on fiducials
         self.landmarkTransform = slicer.vtkMRMLTransformNode()
-        slicer.mrmlScene.AddNode(self.LandmarkTrans)
+        slicer.mrmlScene.AddNode(self.landmarkTransform)
 
         logic = AlignCrop3DSlicerModuleLogic()
-        if(self.placedLandmarkNode.GetNumberOfFiducials() == 4):
-            logic.runAlignmentRegistration(self.landmarkTransform, self.movingFiducialNode)
+        if(self.movingFiducialNode.GetNumberOfFiducials() == 7):
+            logic.runAlignmentRegistration(self.landmarkTransform, self.templateFid, self.movingFiducialNode)
         else:
-            slicer.util.infoDisplay("4 Fiducials required for registration to proceed")
+            slicer.util.infoDisplay("7 Fiducials required for registration to proceed")
 
-        #Apply Landmark transform on input Volume and Harden
+        #Apply Landmark transform on input Volume & Fiducials and Harden
         self.inputVolume.SetAndObserveTransformNodeID(self.landmarkTransform.GetID())
         slicer.vtkSlicerTransformLogic().hardenTransform(self.inputVolume)
+        self.movingFiducialNode.SetAndObserveTransformNodeID(self.landmarkTransform.GetID())
+        slicer.vtkSlicerTransformLogic().hardenTransform(self.movingFiducialNode)
+
+
+        #TODO - Align output is incorrect!! Investigate (Jan 17th - 2018)
 
         #Set template to foreground in Slice Views
         applicationLogic 	= slicer.app.applicationLogic()
@@ -297,14 +380,15 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
     def cleanup(self):
         pass
 
-    def onSelect(self):
-        self.button1.enabled = self.templateSelector.currentNode() and self.inputSelector.currentNode()
+    def onSelectAlign(self):
+        self.OWButton.enabled =  self.templateAtlasSelector.currentNode() and self.templateFidSelector and self.inputSelector.currentNode()
 
-        if(self.button1.enabled):
+        if(self.OWButton.enabled):
             self.inputVolume    = self.inputSelector.currentNode()
-            self.templateVolume = self.templateSelector.currentNode()
+            self.templateVolume = self.templateAtlasSelector.currentNode()
+            self.templateFid    = self.templateFidSelector.currentNode()
 
-    def onSelect2(self):
+    def onSelectCrop(self):
         if self.outputSelector.currentNode():
             self.defineCropButton.enabled = true
 
@@ -349,11 +433,13 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
           return False
         return True
 
-    def runAlignmentRegistration(self, transform, movingFiducial):
+    def runAlignmentRegistration(self, transform, fixedFiducial, movingFiducial):
         #Retrieve fixed landmarks
+
         #TODO - load location of template fiducials
-        fiducialLocation = "User Specified fiducial location"
-        fixedFiducial = slicer.util.loadMarkupsFiducialList(fiducialLocation, returnNode=True)
+        #fiducialLocation    = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) + '/ref_fid.fcsv'
+        #fixedFiducialTuple  = slicer.util.loadMarkupsFiducialList(fiducialLocation, returnNode=True)
+        #fixedFiducial       = fixedFiducialTuple[1] #Retrieve fiducial portion only
 
         #Setup and Run Landmark Registration
         cliParamsFidReg = {	'fixedLandmarks'	: fixedFiducial.GetID(),
