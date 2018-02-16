@@ -22,7 +22,8 @@ class AlignCrop3DSlicerModule(ScriptedLoadableModule):
     self.parent.contributors = ["John Eniolu (Auditory Biophyiscs Lab)"]
     self.parent.helpText = """
     This is a scripted loadable module.
-    It aligns volumes to an ENT clinical reference and crops volumes
+    It aligns volumes to an ENT clinical reference and crops volumes based on
+    a user provided template image
     """
     self.parent.acknowledgementText = """
     This process was developed at
@@ -99,13 +100,13 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         #
         # Fiduical placement buttons
         #
-        self.OWButton		 	= qt.QPushButton('Oval Window')
-        self.OWButton.toolTip 	= "Place oval window fiducial"
-        self.OWButton.enabled	= False
+        self.PAButton		 	= qt.QPushButton('Porus Acousticus')
+        self.PAButton.toolTip 	= "Place porus acousticus fiducial"
+        self.PAButton.enabled	= False
 
-        self.RWButton			= qt.QPushButton('Round Window')
-        self.RWButton.toolTip 	= "Place round window fiducial"
-        self.RWButton.enabled	= False
+        self.GGButton		 	= qt.QPushButton('Geniculate Ganglion')
+        self.GGButton.toolTip 	= "Place geniculate ganglion fiduical"
+        self.GGButton.enabled	= False
 
         self.SFButton		 	= qt.QPushButton('Stylomastoid Formamen')
         self.SFButton.toolTip 	= "Place stylomastoid foramen fiducial"
@@ -119,29 +120,30 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.PSCButton.toolTip 	= "Place posterior semicircular canal fiduical"
         self.PSCButton.enabled	= False
 
-        self.GGButton		 	= qt.QPushButton('Geniculate Ganglion')
-        self.GGButton.toolTip 	= "Place geniculate ganglion fiduical"
-        self.GGButton.enabled	= False
+        self.OWButton		 	= qt.QPushButton('Oval Window')
+        self.OWButton.toolTip 	= "Place oval window fiducial"
+        self.OWButton.enabled	= False
 
-        self.PAButton		 	= qt.QPushButton('Porus Acousticus')
-        self.PAButton.toolTip 	= "Place porus acousticus fiducial"
-        self.PAButton.enabled	= False
+        self.RWButton			= qt.QPushButton('Round Window')
+        self.RWButton.toolTip 	= "Place round window fiducial"
+        self.RWButton.enabled	= False
 
         fiduicalPlacement1 = qt.QHBoxLayout()
-        fiduicalPlacement1.addWidget(self.OWButton)
-        fiduicalPlacement1.addWidget(self.RWButton)
+        fiduicalPlacement1.addWidget(self.PAButton)
+        fiduicalPlacement1.addWidget(self.GGButton)
+        fiduicalPlacement1.addWidget(self.SFButton)
         parametersFormLayoutAlign.addRow("Fiduical Placement: ", fiduicalPlacement1)
 
         fiduicalPlacement2 = qt.QHBoxLayout()
-        fiduicalPlacement2.addWidget(self.SFButton)
         fiduicalPlacement2.addWidget(self.AEButton)
+        fiduicalPlacement2.addWidget(self.PSCButton)
         parametersFormLayoutAlign.addRow("Fiduical Placement: ", fiduicalPlacement2)
 
         fiduicalPlacement3 = qt.QHBoxLayout()
-        fiduicalPlacement3.addWidget(self.PSCButton)
-        fiduicalPlacement3.addWidget(self.GGButton)
-        fiduicalPlacement3.addWidget(self.PAButton)
+        fiduicalPlacement3.addWidget(self.OWButton)
+        fiduicalPlacement3.addWidget(self.RWButton)
         parametersFormLayoutAlign.addRow("Fiduical Placement: ", fiduicalPlacement3)
+
 
         #
         # Align Button
@@ -163,20 +165,37 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         parametersFormLayoutCrop = qt.QFormLayout(parametersCollapsibleButtonCrop)
 
         #
+        # input crop volume template selector
+        #
+        self.cropInputSelector = slicer.qMRMLNodeComboBox()
+        self.cropInputSelector.nodeTypes = ["vtkMRMLScalarVolumeNode"]
+        self.cropInputSelector.selectNodeUponCreation = True
+        self.cropInputSelector.addEnabled = True
+        self.cropInputSelector.renameEnabled = True
+        self.cropInputSelector.removeEnabled = True
+        self.cropInputSelector.noneEnabled = True
+        self.cropInputSelector.showHidden = False
+        self.cropInputSelector.showChildNodeTypes = False
+        self.cropInputSelector.setMRMLScene( slicer.mrmlScene )
+        self.cropInputSelector.setToolTip( "select crop template volume " )
+        parametersFormLayoutCrop.addRow("Crop Template Volume: ", self.cropInputSelector)
+
+
+        #
         # output crop volume selector
         #
-        self.outputSelector = slicer.qMRMLNodeComboBox()
-        self.outputSelector.nodeTypes = ["vtkMRMLScalarVolumeNode"]
-        self.outputSelector.selectNodeUponCreation = True
-        self.outputSelector.addEnabled = True
-        self.outputSelector.renameEnabled = True
-        self.outputSelector.removeEnabled = True
-        self.outputSelector.noneEnabled = True
-        self.outputSelector.showHidden = False
-        self.outputSelector.showChildNodeTypes = False
-        self.outputSelector.setMRMLScene( slicer.mrmlScene )
-        self.outputSelector.setToolTip( "Create new cropped volume " )
-        parametersFormLayoutCrop.addRow("New Cropped Volume: ", self.outputSelector)
+        self.cropOutputSelector = slicer.qMRMLNodeComboBox()
+        self.cropOutputSelector.nodeTypes = ["vtkMRMLScalarVolumeNode"]
+        self.cropOutputSelector.selectNodeUponCreation = True
+        self.cropOutputSelector.addEnabled = True
+        self.cropOutputSelector.renameEnabled = True
+        self.cropOutputSelector.removeEnabled = True
+        self.cropOutputSelector.noneEnabled = True
+        self.cropOutputSelector.showHidden = False
+        self.cropOutputSelector.showChildNodeTypes = False
+        self.cropOutputSelector.setMRMLScene( slicer.mrmlScene )
+        self.cropOutputSelector.setToolTip( "Create new cropped volume " )
+        parametersFormLayoutCrop.addRow("New Cropped Volume: ", self.cropOutputSelector)
 
         #
         #Define ROI & Crop buttons
@@ -200,15 +219,16 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.templateAtlasSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlign)
         self.templateFidSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlign)
         self.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlign)
-        self.OWButton.connect('clicked(bool)', self.onOWButton)
-        self.RWButton.connect('clicked(bool)', self.onRWButton)
+        self.PAButton.connect('clicked(bool)', self.onPAButton)
+        self.GGButton.connect('clicked(bool)', self.onGGButton)
         self.SFButton.connect('clicked(bool)', self.onSFButton)
         self.AEButton.connect('clicked(bool)', self.onAEButton)
         self.PSCButton.connect('clicked(bool)', self.onPSCButton)
-        self.GGButton.connect('clicked(bool)', self.onGGButton)
-        self.PAButton.connect('clicked(bool)', self.onPAButton)
+        self.OWButton.connect('clicked(bool)', self.onOWButton)
+        self.RWButton.connect('clicked(bool)', self.onRWButton)
         self.alignButton.connect('clicked(bool)', self.onAlignButton)
-        self.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectCrop)
+        self.cropInputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectCrop)
+        self.cropOutputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectCrop)
         self.defineCropButton.connect('clicked(bool)', self.onDefineCropButton)
         self.cropButton.connect('clicked(bool)', self.onCropButton)
 
@@ -219,7 +239,7 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.onSelectAlign()
         self.onSelectCrop()
 
-    def onOWButton(self):
+    def onPAButton(self):
         #Setup Fiduical placement
         self.movingFiducialNode = slicer.vtkMRMLMarkupsFiducialNode()
         slicer.mrmlScene.AddNode(self.movingFiducialNode)
@@ -232,26 +252,26 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.fiducialWidget.placeMultipleMarkups = slicer.qSlicerMarkupsPlaceWidget.ForcePlaceSingleMarkup
 
         #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Oval Window:\n\n" +
-                                "Place fiducial on the centre of the oval window.\n\n" +
+        slicer.util.infoDisplay("Porus Acousticus:\n\n" +
+                                "Place fiducial on the centre of the porus acousticus.\n\n" +
                                 "Press okay when ready to begin" )
 
         #Enable fiducial placement
         self.fiducialWidget.setPlaceModeEnabled(True)
 
-        self.OWButton.enabled = False
-        self.RWButton.enabled = True
+        self.PAButton.enabled = False
+        self.GGButton.enabled = True
 
-    def onRWButton(self):
+    def onGGButton(self):
         #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Round Window:\n\n" +
-                                "Place fiduical on the centre of the round window.\n\n" +
+        slicer.util.infoDisplay("Geniculate Ganglion:\n\n" +
+                                "Place fiduical on the geniculate ganglion.\n\n" +
                                 "Press okay when ready" )
 
         #Enable fiducial placement
         self.fiducialWidget.setPlaceModeEnabled(True)
 
-        self.RWButton.enabled = False
+        self.GGButton.enabled = False
         self.SFButton.enabled = True
 
     def onSFButton(self):
@@ -288,24 +308,24 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.fiducialWidget.setPlaceModeEnabled(True)
 
         self.PSCButton.enabled = False
-        self.GGButton.enabled = True
+        self.OWButton.enabled = True
 
-    def onGGButton(self):
+    def onOWButton(self):
         #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Geniculate Ganglion:\n\n" +
-                                "Place fiduical on the geniculate ganglion.\n\n" +
+        slicer.util.infoDisplay("Oval Window:\n\n" +
+                                "Place fiducial on the centre of the oval window.\n\n" +
                                 "Press okay when ready to begin" )
 
         #Enable fiducial placement
         self.fiducialWidget.setPlaceModeEnabled(True)
 
-        self.GGButton.enabled = False
-        self.PAButton.enabled = True
+        self.OWButton.enabled = False
+        self.RWButton.enabled = True
 
-    def onPAButton(self):
+    def onRWButton(self):
         #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Porus Acousticus:\n\n" +
-                                "Place fiducial on the centre of the porus acousticus.\n\n" +
+        slicer.util.infoDisplay("Round Window:\n\n" +
+                                "Place fiduical on the centre of the round window.\n\n" +
                                 "Press okay when ready to begin" )
 
         #Enable fiducial placement
@@ -315,7 +335,8 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
 
     def onAlignButton(self):
 
-        self.button4.enabled = False
+        self.RWButton.enabled = False
+        self.alignButton.enabled = False
         #TODO - logic for aligning images based on fiducials
         self.landmarkTransform = slicer.vtkMRMLTransformNode()
         slicer.mrmlScene.AddNode(self.landmarkTransform)
@@ -361,36 +382,45 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.cropVolParamNode = slicer.vtkMRMLCropVolumeParametersNode()
         self.cropVolParamNode.SetScene(slicer.mrmlScene)
         self.cropVolParamNode.SetName('newCropVolume')
-        self.cropVolParamNode.SetInputVolumeNodeID(self.templateVolume.GetID())
+        self.cropVolParamNode.SetInputVolumeNodeID(self.cropTemplateVolume.GetID())
         self.cropVolParamNode.VoxelBasedOn()
         #logging.info(self.cropVolParamNode.GetVoxelBased())
         slicer.mrmlScene.AddNode(self.cropVolParamNode)
 
         #Fit ROI to input Volume and initialize in scene
-        logic = AValue3DSlicerModuleLogic()
-        self.atlasROI 		= slicer.vtkMRMLAnnotationROINode()
-        self.atlasROI.Initialize(slicer.mrmlScene)
-        self.cropVolumeNode.SetROINodeID(self.atlasROI.GetID())
-        self.atlasROI	= logic.runDefineCropROI(self.cropVolParamNode)
+        logic = AlignCrop3DSlicerModuleLogic()
+        self.templateROI 	= slicer.vtkMRMLAnnotationROINode()
+        self.templateROI.Initialize(slicer.mrmlScene)
+        self.cropVolParamNode.SetROINodeID(self.templateROI.GetID())
+        self.templateROI	= logic.runDefineCropROI(self.cropVolParamNode)
+
+        #Enable cropping button
+        self.cropButton.enabled = True
 
     def onCropButton(self):
         #TODO - Develop cropping process
-        logic = AValue3DSlicerModuleLogic()
+        logic = AlignCrop3DSlicerModuleLogic()
+
+        #cropVolume
+        self.croppedVolume = logic.runCropVolume(   self.templateROI,
+                                                    self.cropTemplateVolume)
 
     def cleanup(self):
         pass
 
     def onSelectAlign(self):
-        self.OWButton.enabled =  self.templateAtlasSelector.currentNode() and self.templateFidSelector and self.inputSelector.currentNode()
+        self.PAButton.enabled =  self.templateAtlasSelector.currentNode() and self.templateFidSelector and self.inputSelector.currentNode()
 
-        if(self.OWButton.enabled):
+        if(self.PAButton.enabled):
             self.inputVolume    = self.inputSelector.currentNode()
             self.templateVolume = self.templateAtlasSelector.currentNode()
             self.templateFid    = self.templateFidSelector.currentNode()
 
     def onSelectCrop(self):
-        if self.outputSelector.currentNode():
-            self.defineCropButton.enabled = true
+        self.defineCropButton.enabled = self.cropInputSelector.currentNode() and self.cropOutputSelector.currentNode()
+
+        if(self.defineCropButton.enabled):
+            self.cropTemplateVolume = self.cropInputSelector.currentNode()
 
 
 #
@@ -478,6 +508,12 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
         """"
         run volume Cropping
         """
+
+        #cliParamCrop = {'':
+        #                '':
+        #                '':
+        #               }
+
         logging.info('Cropping processing started')
         #Create Crop Volume Parameter node
         cropParamNode = slicer.vtkMRMLCropVolumeParametersNode()
@@ -487,7 +523,7 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
         #Set volume and ROI required for cropping
         cropParamNode.SetInputVolumeNodeID(volume.GetID())
         cropParamNode.SetROINodeID(roi.GetID())
-        cropParamNode.VoxelBasedOff()
+        cropParamNode.VoxelBasedOn()
         logging.info(cropParamNode.GetVoxelBased())
         slicer.mrmlScene.AddNode(cropParamNode)
 
@@ -498,29 +534,10 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
 
         logging.info('Cropping processing completed')
 
+
+        #TODO - needs to be voxel based! Perhapas consider using the slicer.cli.run(....) methodologies!!
+
         return cropVol
-
-    def run(self, inputVolume, outputVolume, imageThreshold, enableScreenshots=0):
-        """
-        Run the actual algorithm
-        """
-
-        if not self.isValidInputOutputData(inputVolume, outputVolume):
-            slicer.util.errorDisplay('Input volume is the same as output volume. Choose a different output volume.')
-            return False
-
-        logging.info('Processing started')
-
-        # Compute the thresholded output volume using the Threshold Scalar Volume CLI module
-        cliParams = {'InputVolume': inputVolume.GetID(), 'OutputVolume': outputVolume.GetID(), 'ThresholdValue' : imageThreshold, 'ThresholdType' : 'Above'}
-        cliNode = slicer.cli.run(slicer.modules.thresholdscalarvolume, None, cliParams, wait_for_completion=True)
-
-        # Capture screenshot
-        if enableScreenshots:
-            self.takeScreenshot('AlignCrop3DSlicerModuleTest-Start','MyScreenshot',-1)
-
-        logging.info('Processing completed')
-        return True
 
 
 class AlignCrop3DSlicerModuleTest(ScriptedLoadableModuleTest):
