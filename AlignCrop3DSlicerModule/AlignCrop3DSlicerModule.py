@@ -94,8 +94,8 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.inputSelector.showHidden = False
         self.inputSelector.showChildNodeTypes = False
         self.inputSelector.setMRMLScene( slicer.mrmlScene )
-        self.inputSelector.setToolTip( "Pick the volume to align and/or Crop" )
-        parametersFormLayoutAlign.addRow("Input Volume: ", self.inputSelector)
+        self.inputSelector.setToolTip( "Pick the volume to align " )
+        parametersFormLayoutAlign.addRow("Align Input Volume: ", self.inputSelector)
 
         #
         # Fiduical placement buttons
@@ -164,21 +164,38 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         # Layout within the Crop collapsible button
         parametersFormLayoutCrop = qt.QFormLayout(parametersCollapsibleButtonCrop)
 
+
+        #
+        # input template volume template selector
+        #
+        self.cropTemplateSelector = slicer.qMRMLNodeComboBox()
+        self.cropTemplateSelector.nodeTypes = ["vtkMRMLScalarVolumeNode"]
+        self.cropTemplateSelector.selectNodeUponCreation = True
+        self.cropTemplateSelector.addEnabled = False
+        self.cropTemplateSelector.removeEnabled = False
+        self.cropTemplateSelector.noneEnabled = True
+        self.cropTemplateSelector.showHidden = False
+        self.cropTemplateSelector.showChildNodeTypes = False
+        self.cropTemplateSelector.setMRMLScene( slicer.mrmlScene )
+        self.cropTemplateSelector.setToolTip( "select crop template volume " )
+        parametersFormLayoutCrop.addRow("Crop Template Volume: ", self.cropTemplateSelector)
+
+
+
         #
         # input crop volume template selector
         #
         self.cropInputSelector = slicer.qMRMLNodeComboBox()
         self.cropInputSelector.nodeTypes = ["vtkMRMLScalarVolumeNode"]
         self.cropInputSelector.selectNodeUponCreation = True
-        self.cropInputSelector.addEnabled = True
-        self.cropInputSelector.renameEnabled = True
-        self.cropInputSelector.removeEnabled = True
+        self.cropInputSelector.addEnabled = False
+        self.cropInputSelector.removeEnabled = False
         self.cropInputSelector.noneEnabled = True
         self.cropInputSelector.showHidden = False
         self.cropInputSelector.showChildNodeTypes = False
         self.cropInputSelector.setMRMLScene( slicer.mrmlScene )
-        self.cropInputSelector.setToolTip( "select crop template volume " )
-        parametersFormLayoutCrop.addRow("Crop Template Volume: ", self.cropInputSelector)
+        self.cropInputSelector.setToolTip( "select input volume " )
+        parametersFormLayoutCrop.addRow("Crop Input Volume: ", self.cropInputSelector)
 
 
         #
@@ -227,6 +244,7 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.OWButton.connect('clicked(bool)', self.onOWButton)
         self.RWButton.connect('clicked(bool)', self.onRWButton)
         self.alignButton.connect('clicked(bool)', self.onAlignButton)
+        self.cropTemplateSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectCrop)
         self.cropInputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectCrop)
         self.cropOutputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectCrop)
         self.defineCropButton.connect('clicked(bool)', self.onDefineCropButton)
@@ -378,32 +396,39 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         #TODO - develop process for automatically defining the region of interest
         slicer.app.layoutManager().setLayout(1) #Set to appropriate view (conventional)
 
-        #Define Cropped Volume Parameters
-        self.cropVolParamNode = slicer.vtkMRMLCropVolumeParametersNode()
-        self.cropVolParamNode.SetScene(slicer.mrmlScene)
-        self.cropVolParamNode.SetName('newCropVolume')
-        self.cropVolParamNode.SetInputVolumeNodeID(self.cropTemplateVolume.GetID())
-        self.cropVolParamNode.VoxelBasedOn()
-        #logging.info(self.cropVolParamNode.GetVoxelBased())
-        slicer.mrmlScene.AddNode(self.cropVolParamNode)
 
-        #Fit ROI to input Volume and initialize in scene
         logic = AlignCrop3DSlicerModuleLogic()
-        self.templateROI 	= slicer.vtkMRMLAnnotationROINode()
-        self.templateROI.Initialize(slicer.mrmlScene)
-        self.cropVolParamNode.SetROINodeID(self.templateROI.GetID())
-        self.templateROI	= logic.runDefineCropROI(self.cropVolParamNode)
+
+        self.templateROI = logic.runDefineCropROIVoxel(self.cropTemplateVolume)
+
+        # #Define Cropped Volume Parameters
+        # self.cropVolParamNode = slicer.vtkMRMLCropVolumeParametersNode()
+        # self.cropVolParamNode.SetScene(slicer.mrmlScene)
+        # self.cropVolParamNode.SetName('newCropVolume')
+        # self.cropVolParamNode.SetInputVolumeNodeID(self.cropTemplateVolume.GetID())
+        # self.cropVolParamNode.VoxelBasedOn()
+        # #logging.info(self.cropVolParamNode.GetVoxelBased())
+        # slicer.mrmlScene.AddNode(self.cropVolParamNode)
+        #
+        # #Fit ROI to input Volume and initialize in scene
+        # logic = AlignCrop3DSlicerModuleLogic()
+        # self.templateROI 	= slicer.vtkMRMLAnnotationROINode()
+        # self.templateROI.Initialize(slicer.mrmlScene)
+        # self.cropVolParamNode.SetROINodeID(self.templateROI.GetID())
+        # self.templateROI	= logic.runDefineCropROI(self.cropVolParamNode)
 
         #Enable cropping button
         self.cropButton.enabled = True
 
     def onCropButton(self):
-        #TODO - Develop cropping process
-        logic = AlignCrop3DSlicerModuleLogic()
 
         #cropVolume
-        self.croppedVolume = logic.runCropVolume(   self.templateROI,
-                                                    self.cropTemplateVolume)
+        logic = AlignCrop3DSlicerModuleLogic()
+        logic.runCropVolume(    self.templateROI,
+                                self.cropInputSelector.currentNode())
+
+        #self.croppedVolume = logic.runCropVolume(   self.templateROI,
+                                                    #self.inputSelector.currentNode())
 
     def cleanup(self):
         pass
@@ -417,10 +442,11 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             self.templateFid    = self.templateFidSelector.currentNode()
 
     def onSelectCrop(self):
-        self.defineCropButton.enabled = self.cropInputSelector.currentNode() and self.cropOutputSelector.currentNode()
+        self.defineCropButton.enabled = self.cropTemplateSelector.currentNode() and self.cropInputSelector.currentNode() and self.cropOutputSelector.currentNode()
 
         if(self.defineCropButton.enabled):
-            self.cropTemplateVolume = self.cropInputSelector.currentNode()
+            self.cropTemplateVolume = self.cropTemplateSelector.currentNode()
+            self.cropInputVolume    = self.cropInputSelector.currentNode()
 
 
 #
@@ -480,6 +506,9 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
         cliRigTrans = slicer.cli.run( slicer.modules.fiducialregistration, None,
 		                              cliParamsFidReg, wait_for_completion=True )
 
+
+
+    #Function used if ROI is not to be voxel based - function is not used in this .py script
     def runDefineCropROI(self, cropParam):
         """
         defining region of interest for cropping purposes
@@ -504,40 +533,55 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
         roi.SetRadiusXYZ(volDim[0]/2, volDim[1]/2, volDim[2]/2 )
         return roi
 
+
+    def runDefineCropROIVoxel(self, inputVol):
+
+        #create crop volume parameter node
+        cropParamNode = slicer.vtkMRMLCropVolumeParametersNode()
+        cropParamNode.SetScene(slicer.mrmlScene)
+        cropParamNode.SetName('Template_ROI')
+        cropParamNode.SetInputVolumeNodeID(inputVol.GetID())
+
+        #create ROI
+        template_roi = slicer.vtkMRMLAnnotationROINode()
+        slicer.mrmlScene.AddNode(template_roi)
+        cropParamNode.SetROINodeID(template_roi.GetID())
+
+        #Fit roi to input image
+        slicer.mrmlScene.AddNode(cropParamNode)
+        slicer.modules.cropvolume.logic().SnapROIToVoxelGrid(cropParamNode)
+        slicer.modules.cropvolume.logic().FitROIToInputVolume(cropParamNode)
+
+        return template_roi
+
+		#cropParamNode.VoxelBasedOn()
     def runCropVolume(self, roi, volume):
         """"
         run volume Cropping
         """
-
-        #cliParamCrop = {'':
-        #                '':
-        #                '':
-        #               }
-
         logging.info('Cropping processing started')
+
         #Create Crop Volume Parameter node
         cropParamNode = slicer.vtkMRMLCropVolumeParametersNode()
         cropParamNode.SetScene(slicer.mrmlScene)
         cropParamNode.SetName('Crop_volume_Node1')
-
-        #Set volume and ROI required for cropping
         cropParamNode.SetInputVolumeNodeID(volume.GetID())
         cropParamNode.SetROINodeID(roi.GetID())
-        cropParamNode.VoxelBasedOn()
-        logging.info(cropParamNode.GetVoxelBased())
         slicer.mrmlScene.AddNode(cropParamNode)
+        #cropParamNode.SetROINodeID(roi.GetID())
+        #cropParamNode.VoxelBasedOn()
+        #logging.info(cropParamNode.GetVoxelBased())
+
 
         #Apply Cropping
-        cropVolumeLogic = slicer.modules.cropvolume.logic()
-        cropVolumeLogic.Apply(cropParamNode)
-        cropVol = slicer.mrmlScene.GetNodeByID(cropParamNode.GetOutputVolumeNodeID())
+        #cropVolumeLogic = slicer.modules.cropvolume.logic()
+        #cropVolumeLogic.Apply(cropParamNode)
+        slicer.modules.cropvolume.logic().Apply(cropParamNode)
+        cropVol = slicer.mrmlScene.GetNodeByID(cropParamNode.GetOutputVolumeNodeID()) #TODO- output required? how should it be handled
 
         logging.info('Cropping processing completed')
 
-
-        #TODO - needs to be voxel based! Perhapas consider using the slicer.cli.run(....) methodologies!!
-
-        return cropVol
+        #return cropVol
 
 
 class AlignCrop3DSlicerModuleTest(ScriptedLoadableModuleTest):
