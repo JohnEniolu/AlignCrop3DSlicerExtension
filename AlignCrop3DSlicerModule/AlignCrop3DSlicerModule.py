@@ -261,6 +261,7 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         #Setup Fiduical placement
         self.movingFiducialNode = slicer.vtkMRMLMarkupsFiducialNode()
         slicer.mrmlScene.AddNode(self.movingFiducialNode)
+
         #Fiduical Placement Widget
         self.fiducialWidget = slicer.qSlicerMarkupsPlaceWidget()
         self.fiducialWidget.buttonsVisible = False
@@ -355,7 +356,7 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
 
         self.RWButton.enabled = False
         self.alignButton.enabled = False
-        #TODO - logic for aligning images based on fiducials
+
         self.landmarkTransform = slicer.vtkMRMLTransformNode()
         slicer.mrmlScene.AddNode(self.landmarkTransform)
 
@@ -394,28 +395,11 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
 
     def onDefineCropButton(self):
         #TODO - develop process for automatically defining the region of interest
-        slicer.app.layoutManager().setLayout(1) #Set to appropriate view (conventional)
+        #slicer.app.layoutManager().setLayout(1) #Set to appropriate view (conventional)
 
-
+        #Define logic & retrieve atlas/template region of interest (ROI)
         logic = AlignCrop3DSlicerModuleLogic()
-
         self.templateROI = logic.runDefineCropROIVoxel(self.cropTemplateVolume)
-
-        # #Define Cropped Volume Parameters
-        # self.cropVolParamNode = slicer.vtkMRMLCropVolumeParametersNode()
-        # self.cropVolParamNode.SetScene(slicer.mrmlScene)
-        # self.cropVolParamNode.SetName('newCropVolume')
-        # self.cropVolParamNode.SetInputVolumeNodeID(self.cropTemplateVolume.GetID())
-        # self.cropVolParamNode.VoxelBasedOn()
-        # #logging.info(self.cropVolParamNode.GetVoxelBased())
-        # slicer.mrmlScene.AddNode(self.cropVolParamNode)
-        #
-        # #Fit ROI to input Volume and initialize in scene
-        # logic = AlignCrop3DSlicerModuleLogic()
-        # self.templateROI 	= slicer.vtkMRMLAnnotationROINode()
-        # self.templateROI.Initialize(slicer.mrmlScene)
-        # self.cropVolParamNode.SetROINodeID(self.templateROI.GetID())
-        # self.templateROI	= logic.runDefineCropROI(self.cropVolParamNode)
 
         #Enable cropping button
         self.cropButton.enabled = True
@@ -490,12 +474,6 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
         return True
 
     def runAlignmentRegistration(self, transform, fixedFiducial, movingFiducial):
-        #Retrieve fixed landmarks
-
-        #TODO - load location of template fiducials
-        #fiducialLocation    = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) + '/ref_fid.fcsv'
-        #fixedFiducialTuple  = slicer.util.loadMarkupsFiducialList(fiducialLocation, returnNode=True)
-        #fixedFiducial       = fixedFiducialTuple[1] #Retrieve fiducial portion only
 
         #Setup and Run Landmark Registration
         cliParamsFidReg = {	'fixedLandmarks'	: fixedFiducial.GetID(),
@@ -533,7 +511,6 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
         roi.SetRadiusXYZ(volDim[0]/2, volDim[1]/2, volDim[2]/2 )
         return roi
 
-
     def runDefineCropROIVoxel(self, inputVol):
 
         #create crop volume parameter node
@@ -554,7 +531,6 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
 
         return template_roi
 
-		#cropParamNode.VoxelBasedOn()
     def runCropVolume(self, roi, volume):
         """"
         run volume Cropping
@@ -568,14 +544,8 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
         cropParamNode.SetInputVolumeNodeID(volume.GetID())
         cropParamNode.SetROINodeID(roi.GetID())
         slicer.mrmlScene.AddNode(cropParamNode)
-        #cropParamNode.SetROINodeID(roi.GetID())
-        #cropParamNode.VoxelBasedOn()
-        #logging.info(cropParamNode.GetVoxelBased())
-
 
         #Apply Cropping
-        #cropVolumeLogic = slicer.modules.cropvolume.logic()
-        #cropVolumeLogic.Apply(cropParamNode)
         slicer.modules.cropvolume.logic().Apply(cropParamNode)
         cropVol = slicer.mrmlScene.GetNodeByID(cropParamNode.GetOutputVolumeNodeID()) #TODO- output required? how should it be handled
 
