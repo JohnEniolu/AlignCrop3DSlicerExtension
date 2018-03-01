@@ -41,61 +41,154 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         ScriptedLoadableModuleWidget.setup(self)
         # Instantiate and connect widgets ...
 
+
         #
-        # Align Volume Area
+        # Align Volume Area Cochlear Only (CO)
         #
-        parametersCollapsibleButtonAlign = ctk.ctkCollapsibleButton()
-        parametersCollapsibleButtonAlign.text = "Align Volume"
-        self.layout.addWidget(parametersCollapsibleButtonAlign)
+        parametersCollapsibleButtonAlignCO = ctk.ctkCollapsibleButton()
+        parametersCollapsibleButtonAlignCO.text = "Align Volume (Cochlea Only)"
+        self.layout.addWidget(parametersCollapsibleButtonAlignCO)
 
         # Layout within the Align collapsible button
-        parametersFormLayoutAlign = qt.QFormLayout(parametersCollapsibleButtonAlign)
+        parametersFormLayoutAlignCO = qt.QFormLayout(parametersCollapsibleButtonAlignCO)
 
         #
         # Atlas Template selector
         #
-        self.templateAtlasSelector = slicer.qMRMLNodeComboBox()
-        self.templateAtlasSelector.nodeTypes = ["vtkMRMLScalarVolumeNode"]
-        self.templateAtlasSelector.selectNodeUponCreation = True
-        self.templateAtlasSelector.addEnabled = False
-        self.templateAtlasSelector.removeEnabled = False
-        self.templateAtlasSelector.noneEnabled = True
-        self.templateAtlasSelector.showHidden = False
-        self.templateAtlasSelector.showChildNodeTypes = False
-        self.templateAtlasSelector.setMRMLScene( slicer.mrmlScene )
-        self.templateAtlasSelector.setToolTip( "Pick the template image to register input volume to" )
+        self.templateAtlasSelectorCO = slicer.qMRMLNodeComboBox()
+        self.templateAtlasSelectorCO.nodeTypes = ["vtkMRMLScalarVolumeNode"]
+        self.templateAtlasSelectorCO.selectNodeUponCreation = True
+        self.templateAtlasSelectorCO.addEnabled = False
+        self.templateAtlasSelectorCO.removeEnabled = False
+        self.templateAtlasSelectorCO.noneEnabled = True
+        self.templateAtlasSelectorCO.showHidden = False
+        self.templateAtlasSelectorCO.showChildNodeTypes = False
+        self.templateAtlasSelectorCO.setMRMLScene( slicer.mrmlScene )
+        self.templateAtlasSelectorCO.setToolTip( "Pick the template image to register input volume to" )
         #
         #Atlas Fiducial template selector
         #
-        self.templateFidSelector = slicer.qMRMLNodeComboBox()
-        self.templateFidSelector.nodeTypes = ["vtkMRMLMarkupsFiducialNode"]
-        self.templateFidSelector.selectNodeUponCreation = True
-        self.templateFidSelector.addEnabled = False
-        self.templateFidSelector.removeEnabled = False
-        self.templateFidSelector.noneEnabled = True
-        self.templateFidSelector.showHidden = False
-        self.templateFidSelector.showChildNodeTypes = False
-        self.templateFidSelector.setMRMLScene( slicer.mrmlScene )
-        self.templateFidSelector.setToolTip( "Pick template fiducials to register input volume fiducials to" )
+        self.templateFidSelectorCO = slicer.qMRMLNodeComboBox()
+        self.templateFidSelectorCO.nodeTypes = ["vtkMRMLMarkupsFiducialNode"]
+        self.templateFidSelectorCO.selectNodeUponCreation = True
+        self.templateFidSelectorCO.addEnabled = False
+        self.templateFidSelectorCO.removeEnabled = False
+        self.templateFidSelectorCO.noneEnabled = True
+        self.templateFidSelectorCO.showHidden = False
+        self.templateFidSelectorCO.showChildNodeTypes = False
+        self.templateFidSelectorCO.setMRMLScene( slicer.mrmlScene )
+        self.templateFidSelectorCO.setToolTip( "Pick template fiducials to register input volume fiducials to" )
 
-        templateLayout = qt.QHBoxLayout()
-        templateLayout.addWidget(self.templateAtlasSelector)
-        templateLayout.addWidget(self.templateFidSelector)
-        parametersFormLayoutAlign.addRow("Atlas Template & Fiducials: ", templateLayout)
+        templateLayoutCO = qt.QHBoxLayout()
+        templateLayoutCO.addWidget(self.templateAtlasSelectorCO)
+        templateLayoutCO.addWidget(self.templateFidSelectorCO)
+        parametersFormLayoutAlignCO.addRow("Atlas Template & Fiducials: ", templateLayoutCO)
         #
         # input volume selector
         #
-        self.inputSelector = slicer.qMRMLNodeComboBox()
-        self.inputSelector.nodeTypes = ["vtkMRMLScalarVolumeNode"]
-        self.inputSelector.selectNodeUponCreation = True
-        self.inputSelector.addEnabled = False
-        self.inputSelector.removeEnabled = False
-        self.inputSelector.noneEnabled = True
-        self.inputSelector.showHidden = False
-        self.inputSelector.showChildNodeTypes = False
-        self.inputSelector.setMRMLScene( slicer.mrmlScene )
-        self.inputSelector.setToolTip( "Pick the volume to align " )
-        parametersFormLayoutAlign.addRow("Align Input Volume: ", self.inputSelector)
+        self.inputSelectorCO = slicer.qMRMLNodeComboBox()
+        self.inputSelectorCO.nodeTypes = ["vtkMRMLScalarVolumeNode"]
+        self.inputSelectorCO.selectNodeUponCreation = True
+        self.inputSelectorCO.addEnabled = False
+        self.inputSelectorCO.removeEnabled = False
+        self.inputSelectorCO.noneEnabled = True
+        self.inputSelectorCO.showHidden = False
+        self.inputSelectorCO.showChildNodeTypes = False
+        self.inputSelectorCO.setMRMLScene( slicer.mrmlScene )
+        self.inputSelectorCO.setToolTip( "Pick the volume to align " )
+        parametersFormLayoutAlignCO.addRow("Align Input Volume: ", self.inputSelectorCO)
+
+
+        #
+        # Fiduical buttons for Inner Ear (Cochlea) Only registration
+        #
+        self.OWButtonCO		 	= qt.QPushButton("Oval Window")
+        self.OWButtonCO.toolTip = "Place Oval Window Fiduical"
+        self.OWButtonCO.enabled	= False
+
+        self.CNButton			= qt.QPushButton('Cochlear Nerve')
+        self.CNButton.toolTip 	= "Place Cochlear Nerve Fiduical"
+        self.CNButton.enabled	= False
+
+        self.AButton		 	= qt.QPushButton("Apex")
+        self.AButton.toolTip 	= "Place Apex Fiduical"
+        self.AButton.enabled	= False
+
+        self.RWButtonCO			= qt.QPushButton('Round Window')
+        self.RWButtonCO.toolTip = "Place Round Window Fiduical"
+        self.RWButtonCO.enabled	= False
+
+        fiduicalPlacementCO = qt.QHBoxLayout()
+        fiduicalPlacementCO.addWidget(self.OWButtonCO)
+        fiduicalPlacementCO.addWidget(self.CNButton)
+        fiduicalPlacementCO.addWidget(self.AButton)
+        fiduicalPlacementCO.addWidget(self.RWButtonCO)
+        parametersFormLayoutAlignCO.addRow("Fiduical Placement: ", fiduicalPlacementCO)
+
+        #
+        # Align Button
+        #
+        self.alignButtonCO = qt.QPushButton("Align")
+        self.alignButtonCO.toolTip = "Align volume to clinical reference"
+        self.alignButtonCO.enabled = False
+        parametersFormLayoutAlignCO.addRow(self.alignButtonCO)
+
+
+        #
+        # Align Volume Area (Temporal Bone)
+        #
+        parametersCollapsibleButtonAlignTB = ctk.ctkCollapsibleButton()
+        parametersCollapsibleButtonAlignTB.text = "Align Volume (Temporal Bone)"
+        self.layout.addWidget(parametersCollapsibleButtonAlignTB)
+
+        # Layout within the Align collapsible button
+        parametersFormLayoutAlignTB = qt.QFormLayout(parametersCollapsibleButtonAlignTB)
+
+        #
+        # Atlas Template selector
+        #
+        self.templateAtlasSelectorTB = slicer.qMRMLNodeComboBox()
+        self.templateAtlasSelectorTB.nodeTypes = ["vtkMRMLScalarVolumeNode"]
+        self.templateAtlasSelectorTB.selectNodeUponCreation = True
+        self.templateAtlasSelectorTB.addEnabled = False
+        self.templateAtlasSelectorTB.removeEnabled = False
+        self.templateAtlasSelectorTB.noneEnabled = True
+        self.templateAtlasSelectorTB.showHidden = False
+        self.templateAtlasSelectorTB.showChildNodeTypes = False
+        self.templateAtlasSelectorTB.setMRMLScene( slicer.mrmlScene )
+        self.templateAtlasSelectorTB.setToolTip( "Pick the template image to register input volume to" )
+        #
+        #Atlas Fiducial template selector
+        #
+        self.templateFidSelectorTB = slicer.qMRMLNodeComboBox()
+        self.templateFidSelectorTB.nodeTypes = ["vtkMRMLMarkupsFiducialNode"]
+        self.templateFidSelectorTB.selectNodeUponCreation = True
+        self.templateFidSelectorTB.addEnabled = False
+        self.templateFidSelectorTB.removeEnabled = False
+        self.templateFidSelectorTB.noneEnabled = True
+        self.templateFidSelectorTB.showHidden = False
+        self.templateFidSelectorTB.showChildNodeTypes = False
+        self.templateFidSelectorTB.setMRMLScene( slicer.mrmlScene )
+        self.templateFidSelectorTB.setToolTip( "Pick template fiducials to register input volume fiducials to" )
+
+        templateLayoutTB = qt.QHBoxLayout()
+        templateLayoutTB.addWidget(self.templateAtlasSelectorTB)
+        templateLayoutTB.addWidget(self.templateFidSelectorTB)
+        parametersFormLayoutAlignTB.addRow("Atlas Template & Fiducials: ", templateLayoutTB)
+        #
+        # input volume selector
+        #
+        self.inputSelectorTB = slicer.qMRMLNodeComboBox()
+        self.inputSelectorTB.nodeTypes = ["vtkMRMLScalarVolumeNode"]
+        self.inputSelectorTB.selectNodeUponCreation = True
+        self.inputSelectorTB.addEnabled = False
+        self.inputSelectorTB.removeEnabled = False
+        self.inputSelectorTB.noneEnabled = True
+        self.inputSelectorTB.showHidden = False
+        self.inputSelectorTB.showChildNodeTypes = False
+        self.inputSelectorTB.setMRMLScene( slicer.mrmlScene )
+        self.inputSelectorTB.setToolTip( "Pick the volume to align " )
+        parametersFormLayoutAlignTB.addRow("Align Input Volume: ", self.inputSelectorTB)
 
         #
         # Fiduical placement buttons
@@ -132,26 +225,26 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         fiduicalPlacement1.addWidget(self.PAButton)
         fiduicalPlacement1.addWidget(self.GGButton)
         fiduicalPlacement1.addWidget(self.SFButton)
-        parametersFormLayoutAlign.addRow("Fiduical Placement: ", fiduicalPlacement1)
+        parametersFormLayoutAlignTB.addRow("Fiduical Placement: ", fiduicalPlacement1)
 
         fiduicalPlacement2 = qt.QHBoxLayout()
         fiduicalPlacement2.addWidget(self.AEButton)
         fiduicalPlacement2.addWidget(self.PSCButton)
-        parametersFormLayoutAlign.addRow("Fiduical Placement: ", fiduicalPlacement2)
+        parametersFormLayoutAlignTB.addRow("Fiduical Placement: ", fiduicalPlacement2)
 
         fiduicalPlacement3 = qt.QHBoxLayout()
         fiduicalPlacement3.addWidget(self.OWButton)
         fiduicalPlacement3.addWidget(self.RWButton)
-        parametersFormLayoutAlign.addRow("Fiduical Placement: ", fiduicalPlacement3)
+        parametersFormLayoutAlignTB.addRow("Fiduical Placement: ", fiduicalPlacement3)
 
 
         #
         # Align Button
         #
-        self.alignButton = qt.QPushButton("Align")
-        self.alignButton.toolTip = "Align volume to clinical reference"
-        self.alignButton.enabled = False
-        parametersFormLayoutAlign.addRow(self.alignButton)
+        self.alignButtonTB = qt.QPushButton("Align")
+        self.alignButtonTB.toolTip = "Align volume to clinical reference"
+        self.alignButtonTB.enabled = False
+        parametersFormLayoutAlignTB.addRow(self.alignButtonTB)
 
 
         #
@@ -199,30 +292,14 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
 
 
         #
-        # output crop volume selector
-        #
-        self.cropOutputSelector = slicer.qMRMLNodeComboBox()
-        self.cropOutputSelector.nodeTypes = ["vtkMRMLScalarVolumeNode"]
-        self.cropOutputSelector.selectNodeUponCreation = True
-        self.cropOutputSelector.addEnabled = True
-        self.cropOutputSelector.renameEnabled = True
-        self.cropOutputSelector.removeEnabled = True
-        self.cropOutputSelector.noneEnabled = True
-        self.cropOutputSelector.showHidden = False
-        self.cropOutputSelector.showChildNodeTypes = False
-        self.cropOutputSelector.setMRMLScene( slicer.mrmlScene )
-        self.cropOutputSelector.setToolTip( "Create new cropped volume " )
-        parametersFormLayoutCrop.addRow("New Cropped Volume: ", self.cropOutputSelector)
-
-        #
         #Define ROI & Crop buttons
         #
         self.defineCropButton		 	= qt.QPushButton('Define ROI')
-        self.defineCropButton.toolTip 	= "define region of interest for cropping"
+        self.defineCropButton.toolTip 	= "Define region of interest for cropping"
         self.defineCropButton.enabled	= False
 
         self.cropButton		 	        = qt.QPushButton('Crop!')
-        self.cropButton.toolTip 	    = "define region of interest for cropping"
+        self.cropButton.toolTip 	    = "Crop input volume"
         self.cropButton.enabled	        = False
 
         imageCropping = qt.QHBoxLayout()
@@ -231,11 +308,23 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         parametersFormLayoutCrop.addRow("Select & Crop Region of Interest: ", imageCropping)
 
         #
-        # Align Volume connections
+        # Volume connections
         #
-        self.templateAtlasSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlign)
-        self.templateFidSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlign)
-        self.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlign)
+
+        # Cochlear Only
+        self.templateAtlasSelectorCO.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlignCO)
+        self.templateFidSelectorCO.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlignCO)
+        self.inputSelectorCO.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlignCO)
+        self.OWButtonCO.connect('clicked(bool)', self.onOWButtonCO)
+        self.CNButton.connect('clicked(bool)', self.onCNButton)
+        self.AButton.connect('clicked(bool)', self.onAButton)
+        self.RWButtonCO.connect('clicked(bool)', self.onRWButtonCO)
+        self.alignButtonCO.connect('clicked(bool)', self.onAlignButtonCO)
+
+        # Temporal Bone
+        self.templateAtlasSelectorTB.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlignTB)
+        self.templateFidSelectorTB.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlignTB)
+        self.inputSelectorTB.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectAlignTB)
         self.PAButton.connect('clicked(bool)', self.onPAButton)
         self.GGButton.connect('clicked(bool)', self.onGGButton)
         self.SFButton.connect('clicked(bool)', self.onSFButton)
@@ -243,10 +332,11 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.PSCButton.connect('clicked(bool)', self.onPSCButton)
         self.OWButton.connect('clicked(bool)', self.onOWButton)
         self.RWButton.connect('clicked(bool)', self.onRWButton)
-        self.alignButton.connect('clicked(bool)', self.onAlignButton)
+        self.alignButtonTB.connect('clicked(bool)', self.onAlignButtonTB)
+
+        #Crop Volumes
         self.cropTemplateSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectCrop)
         self.cropInputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectCrop)
-        self.cropOutputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelectCrop)
         self.defineCropButton.connect('clicked(bool)', self.onDefineCropButton)
         self.cropButton.connect('clicked(bool)', self.onCropButton)
 
@@ -254,10 +344,122 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.layout.addStretch(1)
 
         # Refresh select buttons' state
-        self.onSelectAlign()
+        self.onSelectAlignCO()
+        self.onSelectAlignTB()
         self.onSelectCrop()
 
+    #Align Cochlear Only Buttons
+    def onOWButtonCO(self):
+
+        #Setup Fiduical placement
+        self.movingFiducialNodeCO = slicer.vtkMRMLMarkupsFiducialNode()
+        slicer.mrmlScene.AddNode(self.movingFiducialNodeCO)
+
+        #Fiduical Placement Widget
+        self.fiducialWidgetCO = slicer.qSlicerMarkupsPlaceWidget()
+        self.fiducialWidgetCO.buttonsVisible = False
+        self.fiducialWidgetCO.placeButton().show()
+        self.fiducialWidgetCO.setMRMLScene(slicer.mrmlScene)
+        self.fiducialWidgetCO.setCurrentNode(self.movingFiducialNodeCO)
+        self.fiducialWidgetCO.placeMultipleMarkups = slicer.qSlicerMarkupsPlaceWidget.ForcePlaceSingleMarkup
+
+
+        #Delay to ensure Widget Appears & provide user with info
+        slicer.util.infoDisplay("Oval Window:\n\n" +
+                                "Place fiducial on the centre of the oval window.\n\n" +
+                                "Press okay when ready to begin" )
+
+        #Enable fiducial placement
+        self.fiducialWidgetCO.setPlaceModeEnabled(True)
+
+        self.OWButtonCO.enabled = False
+        self.CNButton.enabled = True
+
+    def onCNButton(self):
+
+        #Delay to ensure Widget Appears & provide user with info
+        slicer.util.infoDisplay("Place the following fiducial:\n\n" +
+                                "Cochlear Nerve\n\n" +
+                                "Press okay when ready to begin" )
+
+        		#Enable fiducial placement
+        self.fiducialWidgetCO.setPlaceModeEnabled(True)
+        #Enable Apex button
+        self.CNButton.enabled = False
+        self.AButton.enabled = True
+
+    def onAButton(self):
+        #Delay to ensure Widget Appears & provide user with info
+        slicer.util.infoDisplay("Place the following fiducial:\n\n" +
+                                "Apex\n\n" +
+                                "Press okay when ready to begin" )
+
+        #Enable fiducial placement
+        self.fiducialWidgetCO.setPlaceModeEnabled(True)
+        #Enable Round Window button
+        self.AButton.enabled = False
+        self.RWButtonCO.enabled = True
+
+    def onRWButtonCO(self):
+
+        #Delay to ensure Widget Appears & provide user with info
+        slicer.util.infoDisplay("Place the following fiducial:\n\n" +
+                                "Round Window\n\n" +
+                                "Press okay when ready to begin" )
+
+        #Enable fiducial placement
+        self.fiducialWidgetCO.setPlaceModeEnabled(True)
+        #Enable alignment button
+        self.RWButtonCO.enabled = False
+        self.alignButtonCO.enabled = True
+
+    def onAlignButtonCO(self):
+
+        self.RWButtonCO.enabled = False
+        self.alignButtonCO.enabled = False
+
+        self.landmarkTransformCO = slicer.vtkMRMLTransformNode()
+        slicer.mrmlScene.AddNode(self.landmarkTransformCO)
+
+        logic = AlignCrop3DSlicerModuleLogic()
+        if(self.movingFiducialNodeCO.GetNumberOfFiducials() == 4):
+            logic.runAlignmentRegistration(self.landmarkTransformCO, self.templateFidCO, self.movingFiducialNodeCO)
+        else:
+            slicer.util.infoDisplay("4 Fiducials required for registration to proceed")
+
+        #Apply Landmark transform on input Volume & Fiducials and Harden
+        self.inputVolumeCO.SetAndObserveTransformNodeID(self.landmarkTransformCO.GetID())
+        slicer.vtkSlicerTransformLogic().hardenTransform(self.inputVolumeCO)
+        self.movingFiducialNodeCO.SetAndObserveTransformNodeID(self.landmarkTransformCO.GetID())
+        slicer.vtkSlicerTransformLogic().hardenTransform(self.movingFiducialNodeCO)
+
+
+        #TODO - Align output is incorrect!! Investigate (Jan 17th - 2018)
+
+        #Set template to foreground in Slice Views
+        applicationLogic 	= slicer.app.applicationLogic()
+        selectionNode 		= applicationLogic.GetSelectionNode()
+        selectionNode.SetSecondaryVolumeID(self.templateVolumeCO.GetID())
+        applicationLogic.PropagateForegroundVolumeSelection(0)
+
+        #set overlap of foreground & background in slice view
+        sliceLayout = slicer.app.layoutManager()
+        sliceLogicR = sliceLayout.sliceWidget('Red').sliceLogic()
+        compositeNodeR = sliceLogicR.GetSliceCompositeNode()
+        compositeNodeR.SetForegroundOpacity(0.5)
+        sliceLogicY = sliceLayout.sliceWidget('Yellow').sliceLogic()
+        compositeNodeY = sliceLogicY.GetSliceCompositeNode()
+        compositeNodeY.SetForegroundOpacity(0.5)
+        sliceLogicG = sliceLayout.sliceWidget('Green').sliceLogic()
+        compositeNodeG = sliceLogicG.GetSliceCompositeNode()
+        compositeNodeG.SetForegroundOpacity(0.5)
+
+        #centre slice viewer on image
+        slicer.app.applicationLogic().FitSliceToAll()
+
+    #Align Temporal Bone Buttons
     def onPAButton(self):
+
         #Setup Fiduical placement
         self.movingFiducialNode = slicer.vtkMRMLMarkupsFiducialNode()
         slicer.mrmlScene.AddNode(self.movingFiducialNode)
@@ -349,26 +551,27 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
 
         #Enable fiducial placement
         self.fiducialWidget.setPlaceModeEnabled(True)
-        #Enable Alignment
-        self.alignButton.enabled = True
 
-    def onAlignButton(self):
+        self.RWButton.enabled       = False
+        self.alignButtonTB.enabled  = True
+
+    def onAlignButtonTB(self):
 
         self.RWButton.enabled = False
-        self.alignButton.enabled = False
+        self.alignButtonTB.enabled = False
 
         self.landmarkTransform = slicer.vtkMRMLTransformNode()
         slicer.mrmlScene.AddNode(self.landmarkTransform)
 
         logic = AlignCrop3DSlicerModuleLogic()
         if(self.movingFiducialNode.GetNumberOfFiducials() == 7):
-            logic.runAlignmentRegistration(self.landmarkTransform, self.templateFid, self.movingFiducialNode)
+            logic.runAlignmentRegistration(self.landmarkTransform, self.templateFidTB, self.movingFiducialNode)
         else:
             slicer.util.infoDisplay("7 Fiducials required for registration to proceed")
 
         #Apply Landmark transform on input Volume & Fiducials and Harden
-        self.inputVolume.SetAndObserveTransformNodeID(self.landmarkTransform.GetID())
-        slicer.vtkSlicerTransformLogic().hardenTransform(self.inputVolume)
+        self.inputVolumeTB.SetAndObserveTransformNodeID(self.landmarkTransform.GetID())
+        slicer.vtkSlicerTransformLogic().hardenTransform(self.inputVolumeTB)
         self.movingFiducialNode.SetAndObserveTransformNodeID(self.landmarkTransform.GetID())
         slicer.vtkSlicerTransformLogic().hardenTransform(self.movingFiducialNode)
 
@@ -378,7 +581,7 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         #Set template to foreground in Slice Views
         applicationLogic 	= slicer.app.applicationLogic()
         selectionNode 		= applicationLogic.GetSelectionNode()
-        selectionNode.SetSecondaryVolumeID(self.templateVolume.GetID())
+        selectionNode.SetSecondaryVolumeID(self.templateVolumeTB.GetID())
         applicationLogic.PropagateForegroundVolumeSelection(0)
 
         #set overlap of foreground & background in slice view
@@ -393,9 +596,14 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         compositeNodeG = sliceLogicG.GetSliceCompositeNode()
         compositeNodeG.SetForegroundOpacity(0.5)
 
+        #centre slice viewer on image
+        slicer.app.applicationLogic().FitSliceToAll()
+        #Make Atlas Fidcials visible
+        self.templateFidTB.SetDisplayVisibility(1)
+
+
+    #Cropping Buttons
     def onDefineCropButton(self):
-        #TODO - develop process for automatically defining the region of interest
-        #slicer.app.layoutManager().setLayout(1) #Set to appropriate view (conventional)
 
         #Define logic & retrieve atlas/template region of interest (ROI)
         logic = AlignCrop3DSlicerModuleLogic()
@@ -411,22 +619,36 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         logic.runCropVolume(    self.templateROI,
                                 self.cropInputSelector.currentNode())
 
-        #self.croppedVolume = logic.runCropVolume(   self.templateROI,
-                                                    #self.inputSelector.currentNode())
+
+        #TODO - setup layout on slicer view after cropping.
+        #centre slice viewer on image
+        slicer.app.applicationLogic().FitSliceToAll()
+
+        self.cropButton.enabled = False
 
     def cleanup(self):
         pass
 
-    def onSelectAlign(self):
-        self.PAButton.enabled =  self.templateAtlasSelector.currentNode() and self.templateFidSelector and self.inputSelector.currentNode()
+    def onSelectAlignCO(self):
+        self.OWButtonCO.enabled =  self.templateAtlasSelectorCO.currentNode() and self.templateFidSelectorCO.currentNode() and self.inputSelectorCO.currentNode()
+
+        if(self.OWButtonCO.enabled):
+            self.inputVolumeCO    = self.inputSelectorCO.currentNode()
+            self.templateVolumeCO = self.templateAtlasSelectorCO.currentNode()
+            self.templateFidCO    = self.templateFidSelectorCO.currentNode()
+
+    def onSelectAlignTB(self):
+        self.PAButton.enabled =  self.templateAtlasSelectorTB.currentNode() and self.templateFidSelectorTB.currentNode() and self.inputSelectorTB.currentNode()
 
         if(self.PAButton.enabled):
-            self.inputVolume    = self.inputSelector.currentNode()
-            self.templateVolume = self.templateAtlasSelector.currentNode()
-            self.templateFid    = self.templateFidSelector.currentNode()
+            self.inputVolumeTB    = self.inputSelectorTB.currentNode()
+            self.templateVolumeTB = self.templateAtlasSelectorTB.currentNode()
+            self.templateFidTB    = self.templateFidSelectorTB.currentNode()
+            #Make Atlas Fidcials not visible
+            self.templateFidTB.SetDisplayVisibility(0)
 
     def onSelectCrop(self):
-        self.defineCropButton.enabled = self.cropTemplateSelector.currentNode() and self.cropInputSelector.currentNode() and self.cropOutputSelector.currentNode()
+        self.defineCropButton.enabled = self.cropTemplateSelector.currentNode() and self.cropInputSelector.currentNode()
 
         if(self.defineCropButton.enabled):
             self.cropTemplateVolume = self.cropTemplateSelector.currentNode()
@@ -475,18 +697,20 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
 
     def runAlignmentRegistration(self, transform, fixedFiducial, movingFiducial):
 
+        logging.info("Now running Alignment Registration")
+
         #Setup and Run Landmark Registration
         cliParamsFidReg = {	'fixedLandmarks'	: fixedFiducial.GetID(),
 		                    'movingLandmarks' 	: movingFiducial.GetID(),
-		                    'ransformType' 	    : 'Rigid',
+		                    'TransformType' 	: 'Rigid',
 		                    'saveTransform' 	: transform.GetID() }
 
         cliRigTrans = slicer.cli.run( slicer.modules.fiducialregistration, None,
 		                              cliParamsFidReg, wait_for_completion=True )
 
-
-
-    #Function used if ROI is not to be voxel based - function is not used in this .py script
+    """Function used if ROI is not to be voxel based -
+    - Function is not used in this .py script
+    - Function be used for future development"""
     def runDefineCropROI(self, cropParam):
         """
         defining region of interest for cropping purposes
@@ -532,9 +756,7 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
         return template_roi
 
     def runCropVolume(self, roi, volume):
-        """"
-        run volume Cropping
-        """
+
         logging.info('Cropping processing started')
 
         #Create Crop Volume Parameter node
@@ -547,11 +769,9 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
 
         #Apply Cropping
         slicer.modules.cropvolume.logic().Apply(cropParamNode)
-        cropVol = slicer.mrmlScene.GetNodeByID(cropParamNode.GetOutputVolumeNodeID()) #TODO- output required? how should it be handled
 
         logging.info('Cropping processing completed')
 
-        #return cropVol
 
 
 class AlignCrop3DSlicerModuleTest(ScriptedLoadableModuleTest):
