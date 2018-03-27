@@ -41,7 +41,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         ScriptedLoadableModuleWidget.setup(self)
         # Instantiate and connect widgets ...
 
-
         #
         # Align Volume Area Cochlear Only (CO)
         #
@@ -351,6 +350,9 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
     #Align Cochlear Only Buttons
     def onOWButtonCO(self):
 
+        #initialize placement checklist
+        self.placementListCO = {'OW': True, 'CN': True, 'A': True,'RW': True} #Tracking skipped data
+
         #Setup Fiduical placement
         self.movingFiducialNodeCO = slicer.vtkMRMLMarkupsFiducialNode()
         slicer.mrmlScene.AddNode(self.movingFiducialNodeCO)
@@ -364,54 +366,120 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.fiducialWidgetCO.placeMultipleMarkups = slicer.qSlicerMarkupsPlaceWidget.ForcePlaceSingleMarkup
 
 
-        #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Oval Window:\n\n" +
-                                "Place fiducial on the centre of the oval window.\n\n" +
-                                "Press okay when ready to begin" )
+        placeCurrentFid = slicer.util.confirmYesNoDisplay("Oval Window:\n\n" +
+                                            "YES - To place fiducial\n" +
+                                            "NO - To skip current fiducial\n" )
 
-        #Enable fiducial placement
-        self.fiducialWidgetCO.setPlaceModeEnabled(True)
+        if placeCurrentFid == True:
+            #Enable fiducial placement
+            self.fiducialWidgetCO.setPlaceModeEnabled(True)
+            #Enable/Disable Buttons
+            self.OWButtonCO.enabled = False
+            self.CNButton.enabled = True
+        else:
+            self.placementListCO['OW'] = False
+            #Enable/Disable Buttons
+            self.OWButtonCO.enabled = False
+            self.CNButton.enabled = True
 
-        self.OWButtonCO.enabled = False
-        self.CNButton.enabled = True
+        # #Delay to ensure Widget Appears & provide user with info
+        # slicer.util.infoDisplay("Oval Window:\n\n" +
+        #                         "Place fiducial on the centre of the oval window.\n\n" +
+        #                         "Press okay when ready to begin" )
+        #
+        # #Enable fiducial placement
+        # self.fiducialWidgetCO.setPlaceModeEnabled(True)
+        #
+        # self.OWButtonCO.enabled = False
+        # self.CNButton.enabled = True
 
     def onCNButton(self):
 
-        #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Place the following fiducial:\n\n" +
-                                "Cochlear Nerve\n\n" +
-                                "Press okay when ready to begin" )
+        placeCurrentFid = slicer.util.confirmYesNoDisplay("Cochlear Nerve:\n\n" +
+                                            "YES - To place fiducial\n"
+                                            "NO - To skip current fiducial\n" )
 
-        		#Enable fiducial placement
-        self.fiducialWidgetCO.setPlaceModeEnabled(True)
-        #Enable Apex button
-        self.CNButton.enabled = False
-        self.AButton.enabled = True
+        if placeCurrentFid == True:
+            #Enable fiducial placement
+            self.fiducialWidgetCO.setPlaceModeEnabled(True)
+            #Enable/Disable Buttons
+            self.CNButton.enabled = False
+            self.AButton.enabled = True
+        else:
+            self.placementListCO['CN'] = False
+            #Enable/Disable Buttons
+            self.CNButton.enabled = False
+            self.AButton.enabled = True
+
+
+        # #Delay to ensure Widget Appears & provide user with info
+        # slicer.util.infoDisplay("Place the following fiducial:\n\n" +
+        #                         "Cochlear Nerve\n\n" +
+        #                         "Press okay when ready to begin" )
+        #
+        # 		#Enable fiducial placement
+        # self.fiducialWidgetCO.setPlaceModeEnabled(True)
+        # #Enable Apex button
+        # self.CNButton.enabled = False
+        # self.AButton.enabled = True
 
     def onAButton(self):
-        #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Place the following fiducial:\n\n" +
-                                "Apex\n\n" +
-                                "Press okay when ready to begin" )
 
-        #Enable fiducial placement
-        self.fiducialWidgetCO.setPlaceModeEnabled(True)
-        #Enable Round Window button
-        self.AButton.enabled = False
-        self.RWButtonCO.enabled = True
+        placeCurrentFid = slicer.util.confirmYesNoDisplay("Apex:\n\n" +
+                                            "YES - To place fiducial\n"
+                                            "NO - To skip current fiducial\n" )
+
+        if placeCurrentFid == True:
+            #Enable fiducial placement
+            self.fiducialWidgetCO.setPlaceModeEnabled(True)
+            #Enable/Disable Buttons
+            self.AButton.enabled = False
+            self.RWButtonCO.enabled = True
+        else:
+            self.placementListCO['A'] = False
+            #Enable/Disable Buttons
+            self.AButton.enabled = False
+            self.RWButtonCO.enabled = True
+
+        # #Delay to ensure Widget Appears & provide user with info
+        # slicer.util.infoDisplay("Place the following fiducial:\n\n" +
+        #                         "Apex\n\n" +
+        #                         "Press okay when ready to begin" )
+        #
+        # #Enable fiducial placement
+        # self.fiducialWidgetCO.setPlaceModeEnabled(True)
+        # #Enable Round Window button
+        # self.AButton.enabled = False
+        # self.RWButtonCO.enabled = True
 
     def onRWButtonCO(self):
 
-        #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Place the following fiducial:\n\n" +
-                                "Round Window\n\n" +
-                                "Press okay when ready to begin" )
+        placeCurrentFid = slicer.util.confirmYesNoDisplay("Round Window:\n\n" +
+                                            "YES - To place fiducial\n"
+                                            "NO - To skip current fiducial\n" )
 
-        #Enable fiducial placement
-        self.fiducialWidgetCO.setPlaceModeEnabled(True)
-        #Enable alignment button
-        self.RWButtonCO.enabled = False
-        self.alignButtonCO.enabled = True
+        if placeCurrentFid == True:
+            #Enable fiducial placement
+            self.fiducialWidgetCO.setPlaceModeEnabled(True)
+            #Enable/Disable Buttons
+            self.RWButtonCO.enabled = False
+            self.alignButtonCO.enabled = True
+        else:
+            self.placementListCO['RW'] = False
+            #Enable/Disable Buttons
+            self.RWButtonCO.enabled = False
+            self.alignButtonCO.enabled = True
+
+        # #Delay to ensure Widget Appears & provide user with info
+        # slicer.util.infoDisplay("Place the following fiducial:\n\n" +
+        #                         "Round Window\n\n" +
+        #                         "Press okay when ready to begin" )
+        #
+        # #Enable fiducial placement
+        # self.fiducialWidgetCO.setPlaceModeEnabled(True)
+        # #Enable alignment button
+        # self.RWButtonCO.enabled = False
+        # self.alignButtonCO.enabled = True
 
     def onAlignButtonCO(self):
 
@@ -422,10 +490,10 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         slicer.mrmlScene.AddNode(self.landmarkTransformCO)
 
         logic = AlignCrop3DSlicerModuleLogic()
-        if(self.movingFiducialNodeCO.GetNumberOfFiducials() == 4):
-            logic.runAlignmentRegistration(self.landmarkTransformCO, self.templateFidCO, self.movingFiducialNodeCO)
+        if(self.movingFiducialNodeCO.GetNumberOfFiducials() > 2):
+            logic.runAlignmentRegistration(self.landmarkTransformCO, self.templateFidCO, self.movingFiducialNodeCO, self.placementListCO)
         else:
-            slicer.util.infoDisplay("4 Fiducials required for registration to proceed")
+            slicer.util.infoDisplay("At least 3 fiducials required for registration to proceed")
 
         #Apply Landmark transform on input Volume & Fiducials and Harden
         self.inputVolumeCO.SetAndObserveTransformNodeID(self.landmarkTransformCO.GetID())
@@ -433,8 +501,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.movingFiducialNodeCO.SetAndObserveTransformNodeID(self.landmarkTransformCO.GetID())
         slicer.vtkSlicerTransformLogic().hardenTransform(self.movingFiducialNodeCO)
 
-
-        #TODO - Align output is incorrect!! Investigate (Jan 17th - 2018)
 
         #Set template to foreground in Slice Views
         applicationLogic 	= slicer.app.applicationLogic()
@@ -460,6 +526,9 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
     #Align Temporal Bone Buttons
     def onPAButton(self):
 
+        #initialize placement checklist
+        self.placementListTB = {'PA': True, 'GG': True, 'SF': True,'AE': True,'PSC': True,'OW': True,'RW': True} #Tracking skipped data
+
         #Setup Fiduical placement
         self.movingFiducialNode = slicer.vtkMRMLMarkupsFiducialNode()
         slicer.mrmlScene.AddNode(self.movingFiducialNode)
@@ -472,88 +541,218 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.fiducialWidget.setCurrentNode(self.movingFiducialNode)
         self.fiducialWidget.placeMultipleMarkups = slicer.qSlicerMarkupsPlaceWidget.ForcePlaceSingleMarkup
 
-        #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Porus Acousticus:\n\n" +
-                                "Place fiducial on the centre of the porus acousticus.\n\n" +
-                                "Press okay when ready to begin" )
+        placeCurrentFid = slicer.util.confirmYesNoDisplay("Porus Acousticus:\n\n" +
+                                            "Place fiducial on the centre of the porus acousticus.\n\n" +
+                                            "YES - To place fiducial\n" +
+                                            "NO - To skip current fiducial\n" )
 
-        #Enable fiducial placement
-        self.fiducialWidget.setPlaceModeEnabled(True)
+        if placeCurrentFid == True:
+            #Enable fiducial placement
+            self.fiducialWidget.setPlaceModeEnabled(True)
+            #Enable/Disable Buttons
+            self.PAButton.enabled = False
+            self.GGButton.enabled = True
+        else:
+            self.placementListTB['PA'] = False
+            #Enable/Disable Buttons
+            self.PAButton.enabled = False
+            self.GGButton.enabled = True
 
-        self.PAButton.enabled = False
-        self.GGButton.enabled = True
+
+        # #Delay to ensure Widget Appears & provide user with info
+        # slicer.util.infoDisplay("Porus Acousticus:\n\n" +
+        #                         "Place fiducial on the centre of the porus acousticus.\n\n" +
+        #                         "Press okay when ready to begin" )
+        #
+        # #Enable fiducial placement
+        # self.fiducialWidget.setPlaceModeEnabled(True)
+        #
+        # self.PAButton.enabled = False
+        # self.GGButton.enabled = True
 
     def onGGButton(self):
-        #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Geniculate Ganglion:\n\n" +
-                                "Place fiduical on the geniculate ganglion.\n\n" +
-                                "Press okay when ready" )
 
-        #Enable fiducial placement
-        self.fiducialWidget.setPlaceModeEnabled(True)
+        placeCurrentFid = slicer.util.confirmYesNoDisplay("Geniculate Ganglion:\n\n" +
+                                            "YES - To place fiducial\n" +
+                                            "NO - To skip current fiducial\n" )
 
-        self.GGButton.enabled = False
-        self.SFButton.enabled = True
+        if placeCurrentFid == True:
+            #Enable fiducial placement
+            self.fiducialWidget.setPlaceModeEnabled(True)
+            #Enable/Disable Buttons
+            self.GGButton.enabled = False
+            self.SFButton.enabled = True
+        else:
+            self.placementListTB['GG'] = False
+            #Enable/Disable Buttons
+            self.GGButton.enabled = False
+            self.SFButton.enabled = True
+
+
+        # #Delay to ensure Widget Appears & provide user with info
+        # slicer.util.infoDisplay("Geniculate Ganglion:\n\n" +
+        #                         "Place fiduical on the geniculate ganglion.\n\n" +
+        #                         "Press okay when ready" )
+        #
+        # #Enable fiducial placement
+        # self.fiducialWidget.setPlaceModeEnabled(True)
+        #
+        # self.GGButton.enabled = False
+        # self.SFButton.enabled = True
 
     def onSFButton(self):
-        #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Stylomastoid Foramen:\n\n" +
-                                "place fiducial at the point it becomes the canal.\n\n" +
-                                "Press okay when ready" )
 
-        #Enable fiducial placement
-        self.fiducialWidget.setPlaceModeEnabled(True)
+        placeCurrentFid = slicer.util.confirmYesNoDisplay("Stylomastoid Foramen:\n\n" +
+                                            "place fiducial at the point it becomes the canal.\n\n" +
+                                            "YES - To place fiducial\n" +
+                                            "NO - To skip current fiducial\n" )
 
-        self.SFButton.enabled = False
-        self.AEButton.enabled = True
+        if placeCurrentFid == True:
+            #Enable fiducial placement
+            self.fiducialWidget.setPlaceModeEnabled(True)
+            #Enable/Disable Buttons
+            self.SFButton.enabled = False
+            self.AEButton.enabled = True
+        else:
+            self.placementListTB['GG'] = False
+            #Enable/Disable Buttons
+            self.SFButton.enabled = False
+            self.AEButton.enabled = True
+
+
+        # #Delay to ensure Widget Appears & provide user with info
+        # slicer.util.infoDisplay("Stylomastoid Foramen:\n\n" +
+        #                         "place fiducial at the point it becomes the canal.\n\n" +
+        #                         "Press okay when ready" )
+        #
+        # #Enable fiducial placement
+        # self.fiducialWidget.setPlaceModeEnabled(True)
+        #
+        # self.SFButton.enabled = False
+        # self.AEButton.enabled = True
 
     def onAEButton(self):
-        #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Arcuate Eminence:\n\n" +
-                                "Place fiducial on the centre of the top of the superior semicircular canal.\n\n" +
-                                "Press okay when ready" )
 
-        #Enable fiducial placement
-        self.fiducialWidget.setPlaceModeEnabled(True)
+        placeCurrentFid = slicer.util.confirmYesNoDisplay("Arcuate Eminence:\n\n" +
+                                            "Place fiducial on the centre of the top of the superior semicircular canal.\n\n" +
+                                            "YES - To place fiducial\n" +
+                                            "NO - To skip current fiducial\n" )
 
-        self.AEButton.enabled = False
-        self.PSCButton.enabled = True
+        if placeCurrentFid == True:
+            #Enable fiducial placement
+            self.fiducialWidget.setPlaceModeEnabled(True)
+            #Enable/Disable Buttons
+            self.AEButton.enabled = False
+            self.PSCButton.enabled = True
+        else:
+            self.placementListTB['AE'] = False
+            #Enable/Disable Buttons
+            self.AEButton.enabled = False
+            self.PSCButton.enabled = True
+
+
+
+        # #Delay to ensure Widget Appears & provide user with info
+        # slicer.util.infoDisplay("Arcuate Eminence:\n\n" +
+        #                         "Place fiducial on the centre of the top of the superior semicircular canal.\n\n" +
+        #                         "Press okay when ready" )
+        #
+        # #Enable fiducial placement
+        # self.fiducialWidget.setPlaceModeEnabled(True)
+        #
+        # self.AEButton.enabled = False
+        # self.PSCButton.enabled = True
 
     def onPSCButton(self):
-        #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Posterior Semicircular Canal:\n\n" +
-                                "Place fiduical on the mid point of the posterior semicircular canal.\n\n"
-                                "Press okay when ready" )
 
-        #Enable fiducial placement
-        self.fiducialWidget.setPlaceModeEnabled(True)
+        placeCurrentFid = slicer.util.confirmYesNoDisplay("Posterior Semicircular Canal:\n\n" +
+                                            "Place fiduical on the mid point of the posterior semicircular canal.\n\n"
+                                            "YES - To place fiducial\n" +
+                                            "NO - To skip current fiducial\n" )
 
-        self.PSCButton.enabled = False
-        self.OWButton.enabled = True
+        if placeCurrentFid == True:
+            #Enable fiducial placement
+            self.fiducialWidget.setPlaceModeEnabled(True)
+            #Enable/Disable Buttons
+            self.PSCButton.enabled = False
+            self.OWButton.enabled = True
+        else:
+            self.placementListTB['PSC'] = False
+            #Enable/Disable Buttons
+            self.PSCButton.enabled = False
+            self.OWButton.enabled = True
+
+
+        # #Delay to ensure Widget Appears & provide user with info
+        # slicer.util.infoDisplay("Posterior Semicircular Canal:\n\n" +
+        #                         "Place fiduical on the mid point of the posterior semicircular canal.\n\n"
+        #                         "Press okay when ready" )
+        #
+        # #Enable fiducial placement
+        # self.fiducialWidget.setPlaceModeEnabled(True)
+        #
+        # self.PSCButton.enabled = False
+        # self.OWButton.enabled = True
 
     def onOWButton(self):
-        #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Oval Window:\n\n" +
-                                "Place fiducial on the centre of the oval window.\n\n" +
-                                "Press okay when ready to begin" )
 
-        #Enable fiducial placement
-        self.fiducialWidget.setPlaceModeEnabled(True)
+        placeCurrentFid = slicer.util.confirmYesNoDisplay("Oval Window:\n\n" +
+                                            "Place fiducial on the centre of the oval window.\n\n" +
+                                            "YES - To place fiducial\n" +
+                                            "NO - To skip current fiducial\n" )
 
-        self.OWButton.enabled = False
-        self.RWButton.enabled = True
+        if placeCurrentFid == True:
+            #Enable fiducial placement
+            self.fiducialWidget.setPlaceModeEnabled(True)
+            #Enable/Disable Buttons
+            self.OWButton.enabled = False
+            self.RWButton.enabled = True
+        else:
+            self.placementListTB['OW'] = False
+            #Enable/Disable Buttons
+            self.OWButton.enabled = False
+            self.RWButton.enabled = True
+
+        # #Delay to ensure Widget Appears & provide user with info
+        # slicer.util.infoDisplay("Oval Window:\n\n" +
+        #                         "Place fiducial on the centre of the oval window.\n\n" +
+        #                         "Press okay when ready to begin" )
+        #
+        # #Enable fiducial placement
+        # self.fiducialWidget.setPlaceModeEnabled(True)
+        #
+        # self.OWButton.enabled = False
+        # self.RWButton.enabled = True
 
     def onRWButton(self):
-        #Delay to ensure Widget Appears & provide user with info
-        slicer.util.infoDisplay("Round Window:\n\n" +
-                                "Place fiduical on the centre of the round window.\n\n" +
-                                "Press okay when ready to begin" )
 
-        #Enable fiducial placement
-        self.fiducialWidget.setPlaceModeEnabled(True)
+        placeCurrentFid = slicer.util.confirmYesNoDisplay("Round Window:\n\n" +
+                                            "Place fiduical on the centre of the round window.\n\n" +
+                                            "YES - To place fiducial\n" +
+                                            "NO - To skip current fiducial\n" )
 
-        self.RWButton.enabled       = False
-        self.alignButtonTB.enabled  = True
+        if placeCurrentFid == True:
+            #Enable fiducial placement
+            self.fiducialWidget.setPlaceModeEnabled(True)
+            #Enable/Disable Buttons
+            self.RWButton.enabled       = False
+            self.alignButtonTB.enabled  = True
+        else:
+            self.placementListTB['RW'] = False
+            #Enable/Disable Buttons
+            self.RWButton.enabled       = False
+            self.alignButtonTB.enabled  = True
+
+        # #Delay to ensure Widget Appears & provide user with info
+        # slicer.util.infoDisplay("Round Window:\n\n" +
+        #                         "Place fiduical on the centre of the round window.\n\n" +
+        #                         "Press okay when ready to begin" )
+        #
+        # #Enable fiducial placement
+        # self.fiducialWidget.setPlaceModeEnabled(True)
+        #
+        # self.RWButton.enabled       = False
+        # self.alignButtonTB.enabled  = True
 
     def onAlignButtonTB(self):
 
@@ -564,10 +763,10 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         slicer.mrmlScene.AddNode(self.landmarkTransform)
 
         logic = AlignCrop3DSlicerModuleLogic()
-        if(self.movingFiducialNode.GetNumberOfFiducials() == 7):
-            logic.runAlignmentRegistration(self.landmarkTransform, self.templateFidTB, self.movingFiducialNode)
+        if(self.movingFiducialNode.GetNumberOfFiducials() > 2):
+            logic.runAlignmentRegistration(self.landmarkTransform, self.templateFidTB, self.movingFiducialNode, self.placementListTB)
         else:
-            slicer.util.infoDisplay("7 Fiducials required for registration to proceed")
+            slicer.util.infoDisplay("At least 3 fiducials required for registration to proceed")
 
         #Apply Landmark transform on input Volume & Fiducials and Harden
         self.inputVolumeTB.SetAndObserveTransformNodeID(self.landmarkTransform.GetID())
@@ -695,9 +894,41 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
           return False
         return True
 
-    def runAlignmentRegistration(self, transform, fixedFiducial, movingFiducial):
+    def runAlignmentRegistration(self, transform, fixedFiducial, movingFiducial, placementChecklist):
 
         logging.info("Now running Alignment Registration")
+
+        #TODO - need to check if we are dealing with CO or TB checklist (the amount of element 4 vs. 7)
+
+        #deselected not used fiducials
+        if len(placementChecklist) == 4:
+            for key, value in placementChecklist.iteritems():
+                if value != True:
+                    if key == 'OW':
+                        fixedFiducial.SetNthFiducialSelected(0, 0)
+                    if key == 'CN':
+                        fixedFiducial.SetNthFiducialSelected(1, 0)
+                    if key == 'A':
+                        fixedFiducial.SetNthFiducialSelected(2, 0)
+                    if key == 'RW':
+                        fixedFiducial.SetNthFiducialSelected(3, 0)
+        else:
+            for key, value in placementChecklist.iteritems():
+                if value != True:
+                    if key == 'PA':
+                        fixedFiducial.SetNthFiducialSelected(0, 0)
+                    if key == 'GG':
+                        fixedFiducial.SetNthFiducialSelected(1, 0)
+                    if key == 'SF':
+                        fixedFiducial.SetNthFiducialSelected(2, 0)
+                    if key == 'AE':
+                        fixedFiducial.SetNthFiducialSelected(3, 0)
+                    if key == 'PSC':
+                        fixedFiducial.SetNthFiducialSelected(4, 0)
+                    if key == 'OW':
+                        fixedFiducial.SetNthFiducialSelected(5, 0)
+                    if key == 'RW':
+                        fixedFiducial.SetNthFiducialSelected(6, 0)
 
         #Setup and Run Landmark Registration
         cliParamsFidReg = {	'fixedLandmarks'	: fixedFiducial.GetID(),
@@ -710,7 +941,7 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
 
     """Function used if ROI is not to be voxel based -
     - Function is not used in this .py script
-    - Function be used for future development"""
+    - Function can be used for future development"""
     def runDefineCropROI(self, cropParam):
         """
         defining region of interest for cropping purposes
