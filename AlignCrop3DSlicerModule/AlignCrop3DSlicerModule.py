@@ -351,7 +351,7 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
     def onOWButtonCO(self):
 
         #initialize placement checklist
-        self.placementListCO = {'OW': True, 'CN': True, 'A': True,'RW': True} #Tracking skipped data
+        self.placementListCO = {'OW': True, 'CN': True, 'A': True,'RW': True} #Tracking skipped fiducial
 
         #Setup Fiduical placement
         self.movingFiducialNodeCO = slicer.vtkMRMLMarkupsFiducialNode()
@@ -364,7 +364,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
         self.fiducialWidgetCO.setMRMLScene(slicer.mrmlScene)
         self.fiducialWidgetCO.setCurrentNode(self.movingFiducialNodeCO)
         self.fiducialWidgetCO.placeMultipleMarkups = slicer.qSlicerMarkupsPlaceWidget.ForcePlaceSingleMarkup
-
 
         placeCurrentFid = slicer.util.confirmYesNoDisplay("Oval Window:\n\n" +
                                             "YES - To place fiducial\n" +
@@ -381,17 +380,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             #Enable/Disable Buttons
             self.OWButtonCO.enabled = False
             self.CNButton.enabled = True
-
-        # #Delay to ensure Widget Appears & provide user with info
-        # slicer.util.infoDisplay("Oval Window:\n\n" +
-        #                         "Place fiducial on the centre of the oval window.\n\n" +
-        #                         "Press okay when ready to begin" )
-        #
-        # #Enable fiducial placement
-        # self.fiducialWidgetCO.setPlaceModeEnabled(True)
-        #
-        # self.OWButtonCO.enabled = False
-        # self.CNButton.enabled = True
 
     def onCNButton(self):
 
@@ -412,17 +400,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             self.AButton.enabled = True
 
 
-        # #Delay to ensure Widget Appears & provide user with info
-        # slicer.util.infoDisplay("Place the following fiducial:\n\n" +
-        #                         "Cochlear Nerve\n\n" +
-        #                         "Press okay when ready to begin" )
-        #
-        # 		#Enable fiducial placement
-        # self.fiducialWidgetCO.setPlaceModeEnabled(True)
-        # #Enable Apex button
-        # self.CNButton.enabled = False
-        # self.AButton.enabled = True
-
     def onAButton(self):
 
         placeCurrentFid = slicer.util.confirmYesNoDisplay("Apex:\n\n" +
@@ -441,16 +418,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             self.AButton.enabled = False
             self.RWButtonCO.enabled = True
 
-        # #Delay to ensure Widget Appears & provide user with info
-        # slicer.util.infoDisplay("Place the following fiducial:\n\n" +
-        #                         "Apex\n\n" +
-        #                         "Press okay when ready to begin" )
-        #
-        # #Enable fiducial placement
-        # self.fiducialWidgetCO.setPlaceModeEnabled(True)
-        # #Enable Round Window button
-        # self.AButton.enabled = False
-        # self.RWButtonCO.enabled = True
 
     def onRWButtonCO(self):
 
@@ -470,16 +437,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             self.RWButtonCO.enabled = False
             self.alignButtonCO.enabled = True
 
-        # #Delay to ensure Widget Appears & provide user with info
-        # slicer.util.infoDisplay("Place the following fiducial:\n\n" +
-        #                         "Round Window\n\n" +
-        #                         "Press okay when ready to begin" )
-        #
-        # #Enable fiducial placement
-        # self.fiducialWidgetCO.setPlaceModeEnabled(True)
-        # #Enable alignment button
-        # self.RWButtonCO.enabled = False
-        # self.alignButtonCO.enabled = True
 
     def onAlignButtonCO(self):
 
@@ -527,7 +484,7 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
     def onPAButton(self):
 
         #initialize placement checklist
-        self.placementListTB = {'PA': True, 'GG': True, 'SF': True,'AE': True,'PSC': True,'OW': True,'RW': True} #Tracking skipped data
+        self.placementListTB = {'PA': True, 'GG': True, 'SF': True,'AE': True,'PSC': True,'OW': True,'RW': True} #Tracking skipped fiducial
 
         #Setup Fiduical placement
         self.movingFiducialNode = slicer.vtkMRMLMarkupsFiducialNode()
@@ -559,17 +516,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             self.GGButton.enabled = True
 
 
-        # #Delay to ensure Widget Appears & provide user with info
-        # slicer.util.infoDisplay("Porus Acousticus:\n\n" +
-        #                         "Place fiducial on the centre of the porus acousticus.\n\n" +
-        #                         "Press okay when ready to begin" )
-        #
-        # #Enable fiducial placement
-        # self.fiducialWidget.setPlaceModeEnabled(True)
-        #
-        # self.PAButton.enabled = False
-        # self.GGButton.enabled = True
-
     def onGGButton(self):
 
         placeCurrentFid = slicer.util.confirmYesNoDisplay("Geniculate Ganglion:\n\n" +
@@ -588,17 +534,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             self.GGButton.enabled = False
             self.SFButton.enabled = True
 
-
-        # #Delay to ensure Widget Appears & provide user with info
-        # slicer.util.infoDisplay("Geniculate Ganglion:\n\n" +
-        #                         "Place fiduical on the geniculate ganglion.\n\n" +
-        #                         "Press okay when ready" )
-        #
-        # #Enable fiducial placement
-        # self.fiducialWidget.setPlaceModeEnabled(True)
-        #
-        # self.GGButton.enabled = False
-        # self.SFButton.enabled = True
 
     def onSFButton(self):
 
@@ -620,17 +555,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             self.AEButton.enabled = True
 
 
-        # #Delay to ensure Widget Appears & provide user with info
-        # slicer.util.infoDisplay("Stylomastoid Foramen:\n\n" +
-        #                         "place fiducial at the point it becomes the canal.\n\n" +
-        #                         "Press okay when ready" )
-        #
-        # #Enable fiducial placement
-        # self.fiducialWidget.setPlaceModeEnabled(True)
-        #
-        # self.SFButton.enabled = False
-        # self.AEButton.enabled = True
-
     def onAEButton(self):
 
         placeCurrentFid = slicer.util.confirmYesNoDisplay("Arcuate Eminence:\n\n" +
@@ -650,18 +574,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             self.AEButton.enabled = False
             self.PSCButton.enabled = True
 
-
-
-        # #Delay to ensure Widget Appears & provide user with info
-        # slicer.util.infoDisplay("Arcuate Eminence:\n\n" +
-        #                         "Place fiducial on the centre of the top of the superior semicircular canal.\n\n" +
-        #                         "Press okay when ready" )
-        #
-        # #Enable fiducial placement
-        # self.fiducialWidget.setPlaceModeEnabled(True)
-        #
-        # self.AEButton.enabled = False
-        # self.PSCButton.enabled = True
 
     def onPSCButton(self):
 
@@ -683,17 +595,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             self.OWButton.enabled = True
 
 
-        # #Delay to ensure Widget Appears & provide user with info
-        # slicer.util.infoDisplay("Posterior Semicircular Canal:\n\n" +
-        #                         "Place fiduical on the mid point of the posterior semicircular canal.\n\n"
-        #                         "Press okay when ready" )
-        #
-        # #Enable fiducial placement
-        # self.fiducialWidget.setPlaceModeEnabled(True)
-        #
-        # self.PSCButton.enabled = False
-        # self.OWButton.enabled = True
-
     def onOWButton(self):
 
         placeCurrentFid = slicer.util.confirmYesNoDisplay("Oval Window:\n\n" +
@@ -713,16 +614,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             self.OWButton.enabled = False
             self.RWButton.enabled = True
 
-        # #Delay to ensure Widget Appears & provide user with info
-        # slicer.util.infoDisplay("Oval Window:\n\n" +
-        #                         "Place fiducial on the centre of the oval window.\n\n" +
-        #                         "Press okay when ready to begin" )
-        #
-        # #Enable fiducial placement
-        # self.fiducialWidget.setPlaceModeEnabled(True)
-        #
-        # self.OWButton.enabled = False
-        # self.RWButton.enabled = True
 
     def onRWButton(self):
 
@@ -743,16 +634,6 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             self.RWButton.enabled       = False
             self.alignButtonTB.enabled  = True
 
-        # #Delay to ensure Widget Appears & provide user with info
-        # slicer.util.infoDisplay("Round Window:\n\n" +
-        #                         "Place fiduical on the centre of the round window.\n\n" +
-        #                         "Press okay when ready to begin" )
-        #
-        # #Enable fiducial placement
-        # self.fiducialWidget.setPlaceModeEnabled(True)
-        #
-        # self.RWButton.enabled       = False
-        # self.alignButtonTB.enabled  = True
 
     def onAlignButtonTB(self):
 
@@ -835,6 +716,8 @@ class AlignCrop3DSlicerModuleWidget(ScriptedLoadableModuleWidget):
             self.inputVolumeCO    = self.inputSelectorCO.currentNode()
             self.templateVolumeCO = self.templateAtlasSelectorCO.currentNode()
             self.templateFidCO    = self.templateFidSelectorCO.currentNode()
+            #Make Atlas Fidcials not visible
+            self.templateFidCO.SetDisplayVisibility(0)
 
     def onSelectAlignTB(self):
         self.PAButton.enabled =  self.templateAtlasSelectorTB.currentNode() and self.templateFidSelectorTB.currentNode() and self.inputSelectorTB.currentNode()
@@ -898,9 +781,7 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
 
         logging.info("Now running Alignment Registration")
 
-        #TODO - need to check if we are dealing with CO or TB checklist (the amount of element 4 vs. 7)
-
-        #deselected not used fiducials
+        #deselected unused fiducials
         if len(placementChecklist) == 4:
             for key, value in placementChecklist.iteritems():
                 if value != True:
@@ -939,11 +820,12 @@ class AlignCrop3DSlicerModuleLogic(ScriptedLoadableModuleLogic):
         cliRigTrans = slicer.cli.run( slicer.modules.fiducialregistration, None,
 		                              cliParamsFidReg, wait_for_completion=True )
 
-    """Function used if ROI is not to be voxel based -
-    - Function is not used in this .py script
-    - Function can be used for future development"""
+
     def runDefineCropROI(self, cropParam):
         """
+        Function used if ROI is not to be voxel based -
+        - Function is not used in this .py script
+        - Function can be used for future development
         defining region of interest for cropping purposes
         """
         vol 		= slicer.mrmlScene.GetNodeByID(cropParam.GetInputVolumeNodeID()	)
@@ -1011,6 +893,7 @@ class AlignCrop3DSlicerModuleTest(ScriptedLoadableModuleTest):
   Uses ScriptedLoadableModuleTest base class, available at:
   https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
   """
+  #TODO Need to implement appropiate test cases - Class left untouched
 
   def setUp(self):
     """ Do whatever is needed to reset the state - typically a scene clear will be enough.
